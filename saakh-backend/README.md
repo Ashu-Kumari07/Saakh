@@ -36,6 +36,13 @@
 - **Trust Level Upgrade:** Upon finding an authentic debit match to the supplier/mandi, the system automatically links the records and upgrades the entry to **`Trust Level 0 (Payment-verified)`** with label `'Matched to UPI'`.
 - **Batch Reconciliation:** Uploading a UPI statement automatically scans and upgrades all past eligible receipts.
 
+### Step 5: Fraud Detection & Anomaly Prevention Engine
+- **Duplicate Image Detection:** Computes cryptographic SHA-256 image hashes and detects cross-vendor or repeated receipt reuse.
+- **Round-Amount Anomaly Detection:** Real agricultural and grocery bills have odd rupees. Flags accounts where $\ge 70\%$ of invoices are round figures (e.g. ₹10,000, ₹15,000).
+- **Mandi Benchmark Rate Check:** Compares item rates against regional commodity benchmarks (e.g. Sugar at ₹78/kg vs market ₹44/kg).
+- **Burst Velocity Bot Detection:** Detects unnatural velocity anomalies, such as **42 voice entries submitted in 3 minutes** (180 seconds).
+- **Automated Underwriting Flags:** Automatically flags suspicious applicants (e.g. Vikas S. with Risk Score 100/100) and displays: *"3 receipts flagged. Do not approve without field verification."*
+
 ---
 
 ## 🛠️ Tech Stack

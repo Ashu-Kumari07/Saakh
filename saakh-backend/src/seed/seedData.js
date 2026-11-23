@@ -154,7 +154,7 @@ function seedDatabase() {
     db.prepare(`DELETE FROM entries WHERE vendor_id = 'v_ramesh_01' AND entry_date = ?`).run(today);
 
     const insertEntry = db.prepare(`
-        INSERT INTO entries (
+        INSERT OR REPLACE INTO entries (
             id, vendor_id, entry_date, entry_time, item, type, amount,
             trust_level, verification_label, is_confirmed, source, created_at, updated_at
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -311,7 +311,7 @@ function seedDatabase() {
     // 7. Seed Receipts for Ramesh Kumar
     db.prepare(`DELETE FROM receipts WHERE vendor_id = 'v_ramesh_01'`).run();
     const insertReceipt = db.prepare(`
-        INSERT INTO receipts (id, vendor_id, supplier_name, bill_number, amount, bill_date, image_path, image_hash, ocr_raw_text, is_matched_upi, created_at)
+        INSERT OR REPLACE INTO receipts (id, vendor_id, supplier_name, bill_number, amount, bill_date, image_path, image_hash, ocr_raw_text, is_matched_upi, created_at)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
@@ -324,13 +324,56 @@ function seedDatabase() {
     // 8. Seed UPI Transactions for Ramesh Kumar
     db.prepare(`DELETE FROM upi_transactions WHERE vendor_id = 'v_ramesh_01'`).run();
     const insertUPI = db.prepare(`
-        INSERT INTO upi_transactions (id, vendor_id, reference_no, payer_payee, type, amount, tx_date, tx_time, matched_receipt_id, created_at)
+        INSERT OR REPLACE INTO upi_transactions (id, vendor_id, reference_no, payer_payee, type, amount, tx_date, tx_time, matched_receipt_id, created_at)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     insertUPI.run('upi_tx_01', 'v_ramesh_01', 'UPI9281726351', 'PhonePe settlement: 14 customer QR payments', 'credit', 1840, '2026-11-21', '06:30 PM', null, '2026-11-21T18:30:00Z');
     insertUPI.run('upi_tx_02', 'v_ramesh_01', 'UPI4829104812', 'UPI transfer to Chakarpur Mandi (bill #418)', 'debit', 4850, '2026-11-20', '09:15 AM', 'rcpt_01', '2026-11-20T09:15:00Z');
     insertUPI.run('upi_tx_03', 'v_ramesh_01', 'UPI1029384756', 'Paytm QR inflow: 19 customer payments', 'credit', 2120, '2026-11-19', '07:10 PM', null, '2026-11-19T19:10:00Z');
+
+    // 9. Seed Fraudulent Profile Data for Vikas S. (v_vikas_02)
+    // Feature: "Duplicate image, round amounts, rate vs market, 3 minute mein 42 voice entries"
+    db.prepare(`DELETE FROM receipts WHERE vendor_id = 'v_vikas_02'`).run();
+    db.prepare(`DELETE FROM entries WHERE vendor_id = 'v_vikas_02'`).run();
+
+    // Receipt with shared duplicate hash across vendors
+    const duplicateHash = 'shared_duplicate_receipt_hash_98741';
+    insertReceipt.run('rcpt_sita_dup', 'v_sita_03', 'Nagpur Wholesale Mandi', 'INV-551', 10000, '2026-11-03', 'uploads/receipt_dup.jpg', duplicateHash, 'Duplicate receipt test', 0, '2026-11-03T10:00:00Z');
+
+    // Vikas's receipts: Round amounts (₹10,000, ₹15,000) & Duplicate hash!
+    insertReceipt.run('rcpt_vikas_01', 'v_vikas_02', 'Indore Kirana Wholesaler', 'INV-1001', 10000, '2026-11-03', 'uploads/receipt_vikas_1.jpg', duplicateHash, 'Round amount receipt', 0, '2026-11-03T11:00:00Z');
+    insertReceipt.run('rcpt_vikas_02', 'v_vikas_02', 'Malwa Sugar Distributors', 'INV-1002', 15000, '2026-11-09', 'uploads/receipt_vikas_2.jpg', duplicateHash, 'Round amount duplicate', 0, '2026-11-09T11:00:00Z');
+    insertReceipt.run('rcpt_vikas_03', 'v_vikas_02', 'Central Grain Mandi', 'INV-1003', 10000, '2026-11-12', 'uploads/receipt_vikas_3.jpg', 'hash_vikas_3', 'Round amount 3', 0, '2026-11-12T11:00:00Z');
+
+    // Vikas's Rate Mismatch: Sugar 50 kg for ₹3,900 -> ₹78/kg vs market ₹44/kg!
+    insertEntry.run('e_vikas_rate', 'v_vikas_02', '2026-11-20', '09:00 AM', 'Sugar 50 kg', 'Purchase', -3900, 4, 'Confirmed by you', 1, 'manual', '2026-11-20T09:00:00Z', '2026-11-20T09:00:00Z');
+
+    // Vikas's Burst Velocity: 42 voice entries recorded within 3 minutes!
+    const burstStart = new Date('2026-11-20T14:00:00Z').getTime();
+    for (let k = 1; k <= 42; k++) {
+        const timeOffsetMs = k * 4000; // 4 seconds apart = 42 * 4 = 168 seconds (< 180s / 3 minutes!)
+        const burstTimeStr = new Date(burstStart + timeOffsetMs).toISOString();
+        insertEntry.run(
+            `e_vikas_burst_${k}`,
+            'v_vikas_02',
+            '2026-11-20',
+            '02:00 PM',
+            `Fast Cash Sale #${k}`,
+            'Sale',
+            150 + (k * 10),
+            4,
+            'Confirmed by you',
+            1,
+            'voice',
+            burstTimeStr,
+            burstTimeStr
+        );
+    }
+
+    // 10. Run Fraud Scan on Vikas to seed flags table
+    const FraudEngine = require('../services/fraudEngine');
+    FraudEngine.scanVendor('v_vikas_02');
 
     console.log('[Saakh Seed] Seed data inserted successfully!');
 }
