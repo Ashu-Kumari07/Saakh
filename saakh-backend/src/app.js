@@ -10,6 +10,8 @@ const incomeRoutes = require('./routes/incomeRoutes');
 const receiptRoutes = require('./routes/receiptRoutes');
 const upiRoutes = require('./routes/upiRoutes');
 const fraudRoutes = require('./routes/fraudRoutes');
+const voiceRoutes = require('./routes/voiceRoutes');
+const ocrRoutes = require('./routes/ocrRoutes');
 const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
@@ -57,6 +59,8 @@ app.use('/api/vendor/income', incomeRoutes);
 app.use('/api/receipts', receiptRoutes);
 app.use('/api/upi', upiRoutes);
 app.use('/api/fraud', fraudRoutes);
+app.use('/api/voice', voiceRoutes);
+app.use('/api/ocr', ocrRoutes);
 
 // 404 Handler
 app.use((req, res) => {

@@ -1,4 +1,4 @@
-# Saakh Backend — Step 1 & Step 2: Consent, Lender API & Core Ledger
+# Saakh Backend — Full Production System (Steps 1 through 6 Complete)
 
 > **"Cash income, finally provable."** — High-integrity, consent-first underwriting and date-wise ledger backend for India's micro-enterprises and street vendors.
 
@@ -42,6 +42,15 @@
 - **Mandi Benchmark Rate Check:** Compares item rates against regional commodity benchmarks (e.g. Sugar at ₹78/kg vs market ₹44/kg).
 - **Burst Velocity Bot Detection:** Detects unnatural velocity anomalies, such as **42 voice entries submitted in 3 minutes** (180 seconds).
 - **Automated Underwriting Flags:** Automatically flags suspicious applicants (e.g. Vikas S. with Risk Score 100/100) and displays: *"3 receipts flagged. Do not approve without field verification."*
+
+### Step 6: Voice (Whisper) & Mandi Invoice OCR Engine
+- **Bilingual Speech & Sentence Parser:** Moves speech transcription and financial entity extraction from client-side to the backend. Supports English and Hindi/Hinglish vendor expressions:
+  - *"Sold three packets of chips, twenty rupees each"* -> `Sale`, `Chips 3 packets`, Qty: `3`, Unit Price: `₹20`, Total: `₹60`.
+  - *"Kharida pyaz 20 kilo 680 rupay"* -> `Purchase`, `Onions 20 kilo`, Qty: `20`, Unit Price: `₹34`, Total: `₹680`.
+- **Audio Proof Storage:** Spoken audio stream saved to disk proof storage (`uploads/audio/`), linking every voice entry directly to audio proof in `entries.voice_audio_path`.
+- **Intelligent Mandi Invoice OCR:** Regex & OCR parsing pipeline for wholesale supplier receipts:
+  - Extracts supplier name (e.g., *Chakarpur Mandi Wholesale Traders*), Bill Number (*BILL #418*), Bill Date (*2026-11-20*), and Total Amount (*₹4,850*).
+  - High confidence extraction ($\ge 94\%$) directly ready for automatic UPI cross-matching.
 
 ---
 
