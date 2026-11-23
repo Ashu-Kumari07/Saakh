@@ -18,6 +18,16 @@
 - **Privacy-Preserving Lender Views:** Lenders only see calculated underwriting summaries, confidence bands, evidence mixes, and risk flags. Raw audio recordings, phone numbers, and raw bank statements are never leaked.
 - **Real-Time Applications Queue:** Applications dynamically reflect consent states (`Consent valid`, `Consent pending`, `Consent withdrawn`). Unconsented vendor numbers are completely masked.
 
+### Step 3: Algorithmic Income Engine & 3-Source Cross-Check
+- **Margin & Turnover Modeling:** Purchases se sales ka estimate derive hota hai (wholesale COGS markup model for micro-enterprises).
+- **Conservative Income Bounds:** `₹27,000 to ₹35,000` (Never a fake exact number).
+- **30% EMI Cap Rule:** Suggested max EMI is strictly capped at **30% of the lower income bound** (`0.30 * ₹27,000 = ₹8,100` -> **`₹8,000`**), preventing predatory over-leveraging.
+- **Independent 3-Source Triangulation:**
+  - Source 1: *Supplier purchases* (`[27000, 36000]`)
+  - Source 2: *Daily voice log* (`[28000, 37500]`)
+  - Source 3: *UPI inflow* (`[26000, 34500]`)
+  - *Mathematical Overlap:* `[max(mins), min(maxs)]` = **`₹28,000 to ₹34,500`**. When they overlap, confidence becomes **High**; when there is a mismatch (like Vikas S.), confidence drops to **Low**.
+
 ---
 
 ## 🛠️ Tech Stack

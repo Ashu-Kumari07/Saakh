@@ -1,5 +1,6 @@
 const { randomUUID } = require('node:crypto');
 const db = require('../config/db');
+const IncomeEngine = require('../services/incomeEngine');
 
 // Helper to log server-side access to access_log
 function recordAccess(vendorId, lender, action, req) {
@@ -84,34 +85,23 @@ exports.getApplications = (req, res, next) => {
                 };
             }
 
-            // Normal verified applicant (e.g. Ramesh Kumar, Sita Verma)
-            const incomeData = v.id === 'v_sita_03' ? {
-                range: '₹38,000 to ₹46,000',
-                conf: 'High',
-                mix: [52, 34, 8, 0, 6],
-                emi: '₹11,000',
-                route: null
-            } : {
-                range: '₹27,000 to ₹35,000',
-                conf: 'High',
-                mix: [68, 14, 8, 5, 5],
-                emi: '₹8,000',
-                route: 'ramesh'
-            };
+            // Normal verified applicant (Ramesh Kumar, Sita Verma, etc.)
+            const profile = IncomeEngine.calculateVendorUnderwriting(v.id);
+            const route = v.id === 'v_ramesh_01' ? 'ramesh' : null;
 
             return {
                 id: v.id,
                 name: v.name,
                 businessSubtitle: `${v.business_type} · ${v.city}`,
-                incomeRange: incomeData.range,
-                confidence: incomeData.conf,
-                evidenceMix: incomeData.mix,
+                incomeRange: profile.estimatedMonthlyIncomeRange,
+                confidence: profile.confidence,
+                evidenceMix: profile.evidenceMix,
                 consentStatus: 'valid',
                 consentBadge: 'Consent valid',
-                suggestedMaxEmi: incomeData.emi,
+                suggestedMaxEmi: profile.suggestedMaxEmi,
                 isFlagged: false,
                 canReview: true,
-                reviewRoute: incomeData.route
+                reviewRoute: route
             };
         });
 
@@ -205,45 +195,27 @@ exports.getVendorReview = (req, res, next) => {
             });
         }
 
-        // Ramesh Kumar (Verified Vendor)
+        // Verified Vendor Dynamic Underwriting Profile (Ramesh Kumar, etc.)
+        const profile = IncomeEngine.calculateVendorUnderwriting(vendorId);
+
         return res.json({
             success: true,
             vendor: {
                 id: vendor.id,
                 name: vendor.name,
-                business: 'Vegetable vendor',
-                city: 'Kanpur',
-                yearsInBusiness: 4,
+                business: vendor.business_type,
+                city: vendor.city,
+                yearsInBusiness: vendor.years_in_business,
                 consentValidUntil: consent.valid_until
             },
             underwriting: {
-                estimatedIncomeRange: '₹27,000 to ₹35,000',
-                confidence: 'High',
-                suggestedMaxEmi: '₹8,000',
-                evidenceMix: [65, 15, 10, 6, 4],
-                riskChecks: [
-                    { label: 'No duplicate receipts', passed: true },
-                    { label: 'Claims match purchase pattern', passed: true },
-                    { label: 'Rates within market range', passed: true }
-                ],
-                incomeCrossCheck: {
-                    agreed: true,
-                    message: 'All three sources agree',
-                    overlap: [28000, 34500],
-                    ranges: [
-                        { source: 'Supplier purchases', min: 27000, max: 36000, type: 'invoice' },
-                        { source: 'Daily voice log', min: 28000, max: 37500, type: 'self' },
-                        { source: 'UPI inflow', min: 26000, max: 34500, type: 'payment' }
-                    ]
-                },
-                scoreBreakdown: [
-                    { category: 'UPI', weight: 30, type: 'payment' },
-                    { category: 'Purchases', weight: 30, type: 'payment' },
-                    { category: 'Utility', weight: 15, type: 'invoice' },
-                    { category: 'Business history', weight: 10, type: 'invoice' },
-                    { category: 'SHG', weight: 10, type: 'supplier' },
-                    { category: 'Voice log', weight: 5, type: 'self' }
-                ],
+                estimatedIncomeRange: profile.estimatedMonthlyIncomeRange,
+                confidence: profile.confidence,
+                suggestedMaxEmi: profile.suggestedMaxEmi,
+                evidenceMix: profile.evidenceMix,
+                riskChecks: profile.riskChecks,
+                incomeCrossCheck: profile.incomeCrossCheck,
+                scoreBreakdown: profile.scoreBreakdown,
                 evidenceTabs: {
                     'Receipts': [
                         { title: 'Chakarpur Mandi: Tomatoes & onions (180 kg)', amount: '₹4,850', date: '20 Nov 2026', trustLevel: 0 },

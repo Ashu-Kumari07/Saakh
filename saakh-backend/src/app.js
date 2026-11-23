@@ -6,6 +6,7 @@ const authRoutes = require('./routes/authRoutes');
 const entriesRoutes = require('./routes/entriesRoutes');
 const consentRoutes = require('./routes/consentRoutes');
 const lenderRoutes = require('./routes/lenderRoutes');
+const incomeRoutes = require('./routes/incomeRoutes');
 const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
@@ -45,6 +46,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/entries', entriesRoutes);
 app.use('/api/vendor/consent', consentRoutes);
 app.use('/api/lender', lenderRoutes);
+app.use('/api/income', incomeRoutes);
+app.use('/api/vendor/income', incomeRoutes);
 
 // 404 Handler
 app.use((req, res) => {
