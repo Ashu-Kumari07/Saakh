@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Saakh: Cash income, finally provable</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <!-- Tailwind Play CDN: fine for a prototype. For production, switch to the Tailwind CLI build. -->
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="js/tailwind-config.js"></script>
+</head>
+<body class="bg-surface text-on-surface font-body antialiased">
+  <div id="app"></div>
+  <div id="toast" class="hidden fixed left-1/2 -translate-x-1/2 bottom-24 lg:bottom-8 z-50 px-4 py-2.5 rounded bg-on-surface text-surface text-label-md font-label"></div>
+
+  <!-- Order matters: each file uses what the earlier ones define. -->
+  <script src="js/utils.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/ledger.js"></script>
+  <script src="js/pages.js"></script>
+  <script src="js/voice.js"></script>
+  <script src="js/router.js"></script>
+</body>
+</html>

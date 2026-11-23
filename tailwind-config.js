@@ -1,0 +1,5 @@
+/* Tailwind (Play CDN) config: maps the Stitch design tokens to Tailwind class names.
+   Every colour points to a CSS variable defined in css/styles.css. */
+const N='primary on-primary primary-container on-primary-container accent on-accent surface on-surface surface-container surface-container-low on-surface-variant outline outline-strong trust-payment trust-invoice trust-supplier trust-unverified on-trust-unverified trust-self trust-payment-tint trust-invoice-tint trust-supplier-tint trust-unverified-tint trust-self-tint'.split(' ');
+const F=['"Plus Jakarta Sans"','sans-serif'],T=(a,b,c,d)=>[a+'px',{lineHeight:b+'px',letterSpacing:c+'px',fontWeight:d}];
+tailwind.config={theme:{extend:{colors:Object.fromEntries(N.map(n=>[n,`var(--${n})`])),borderRadius:{sm:'4px',DEFAULT:'8px',md:'12px',lg:'16px'},fontFamily:{display:F,headline:F,title:F,body:F,label:F},fontSize:{'display-lg':T(36,44,-.5,700),'display-lg-mobile':T(28,36,-.25,700),'headline-lg':T(24,32,-.25,700),'headline-md':T(18,26,0,600),'title-md':T(15,22,0,600),'body-md':T(14,20,0,400),'label-md':T(13,18,0,600),'label-sm':T(12,16,0,500)}}}};
