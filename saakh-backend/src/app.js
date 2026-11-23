@@ -4,6 +4,8 @@ require('dotenv').config();
 
 const authRoutes = require('./routes/authRoutes');
 const entriesRoutes = require('./routes/entriesRoutes');
+const consentRoutes = require('./routes/consentRoutes');
+const lenderRoutes = require('./routes/lenderRoutes');
 const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
@@ -41,6 +43,8 @@ app.get('/api/health', (req, res) => {
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/entries', entriesRoutes);
+app.use('/api/vendor/consent', consentRoutes);
+app.use('/api/lender', lenderRoutes);
 
 // 404 Handler
 app.use((req, res) => {

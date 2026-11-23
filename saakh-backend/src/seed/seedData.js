@@ -52,6 +52,54 @@ function seedDatabase() {
         '2025-05-15T10:00:00Z'
     );
 
+    insertVendor.run(
+        'v_imran_04',
+        '9876543212',
+        'Imran Qureshi',
+        'Tea stall',
+        'Indore',
+        2,
+        '2025-06-20',
+        1,
+        '2025-06-20T10:00:00Z'
+    );
+
+    insertVendor.run(
+        'v_meena_05',
+        '9876543213',
+        'Meena Devi',
+        'Bangle seller',
+        'Jaipur',
+        5,
+        '2025-03-10',
+        1,
+        '2025-03-10T10:00:00Z'
+    );
+
+    insertVendor.run(
+        'v_raju_06',
+        '9876543214',
+        'Raju Yadav',
+        'Fruit cart',
+        'Lucknow',
+        1,
+        '2026-01-15',
+        0,
+        '2026-01-15T10:00:00Z'
+    );
+
+    insertVendor.run(
+        'v_asha_07',
+        '9876543215',
+        'Asha Patil',
+        'Snack stall',
+        'Pune',
+        2,
+        '2025-08-01',
+        1,
+        '2025-08-01T10:00:00Z'
+    );
+
     // 2. Seed Lenders
     const insertLender = db.prepare(`
         INSERT INTO lenders (id, email, password_hash, name, organization, role, is_approved, created_at)
@@ -191,23 +239,31 @@ function seedDatabase() {
         }
     }
 
-    // 5. Seed Consent for Ramesh Kumar with Kanpur Microfinance
-    db.prepare(`
+    // 5. Seed Consents with Kanpur Microfinance (l_priya_01)
+    const insertConsent = db.prepare(`
         INSERT INTO consents (id, vendor_id, lender_id, status, scope, valid_until, created_at, updated_at)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(vendor_id, lender_id) DO UPDATE SET
             status = excluded.status,
             valid_until = excluded.valid_until
-    `).run(
-        'c_ramesh_kanpur',
-        'v_ramesh_01',
-        'l_priya_01',
-        'active',
-        JSON.stringify(['income_range', 'evidence_summary', 'fraud_checks']),
-        '2027-02-12',
-        '2026-11-18T11:03:00Z',
-        '2026-11-18T11:03:00Z'
-    );
+    `);
+
+    const defaultScope = JSON.stringify(['income_range', 'evidence_summary', 'fraud_checks']);
+
+    // Ramesh Kumar: Active consent till 12 Feb 2027
+    insertConsent.run('c_ramesh_01', 'v_ramesh_01', 'l_priya_01', 'active', defaultScope, '2027-02-12', '2026-11-18T11:03:00Z', '2026-11-18T11:03:00Z');
+    // Sita Verma: Active consent
+    insertConsent.run('c_sita_03', 'v_sita_03', 'l_priya_01', 'active', defaultScope, '2027-04-10', '2026-11-10T10:00:00Z', '2026-11-10T10:00:00Z');
+    // Imran Qureshi: Active consent
+    insertConsent.run('c_imran_04', 'v_imran_04', 'l_priya_01', 'active', defaultScope, '2027-03-15', '2026-11-12T10:00:00Z', '2026-11-12T10:00:00Z');
+    // Meena Devi: Active consent
+    insertConsent.run('c_meena_05', 'v_meena_05', 'l_priya_01', 'active', defaultScope, '2027-03-20', '2026-11-14T10:00:00Z', '2026-11-14T10:00:00Z');
+    // Raju Yadav: Consent pending
+    insertConsent.run('c_raju_06', 'v_raju_06', 'l_priya_01', 'pending', defaultScope, '2027-01-01', '2026-11-20T10:00:00Z', '2026-11-20T10:00:00Z');
+    // Asha Patil: Active consent
+    insertConsent.run('c_asha_07', 'v_asha_07', 'l_priya_01', 'active', defaultScope, '2027-02-28', '2026-11-05T10:00:00Z', '2026-11-05T10:00:00Z');
+    // Vikas S.: Active consent till 20 Jan 2027 (Flagged)
+    insertConsent.run('c_vikas_02', 'v_vikas_02', 'l_priya_01', 'active', defaultScope, '2027-01-20', '2026-11-01T10:00:00Z', '2026-11-01T10:00:00Z');
 
     // 6. Seed Access Log (Kisne kab profile dekha)
     db.prepare(`DELETE FROM access_log WHERE vendor_id = 'v_ramesh_01'`).run();

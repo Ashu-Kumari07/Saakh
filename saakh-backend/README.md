@@ -1,26 +1,22 @@
-# Saakh Backend — Step 1: Database, Auth & Entries API
+# Saakh Backend — Step 1 & Step 2: Consent, Lender API & Core Ledger
 
 > **"Cash income, finally provable."** — High-integrity, consent-first underwriting and date-wise ledger backend for India's micro-enterprises and street vendors.
 
 ---
 
-## 🚀 Overview of Step 1
+## 🚀 Overview of Completed Steps
 
-This repository contains the backend implementation for **Step 1** of Saakh:
-1. **Relational Database (`node:sqlite` in WAL mode):**
-   - Tables: `vendors`, `lenders`, `entries`, `consents`, `access_log`, `receipts`, `upi_transactions`, `entry_history`, `flags`, `otp_sessions`.
-2. **Dual-Role Authentication:**
-   - **Vendors:** Phone OTP verification (`/api/auth/vendor/send-otp` & `/api/auth/vendor/verify-otp`). Token contains `role: 'vendor'`.
-   - **Lenders:** Work email + password with admin approval check (`/api/auth/lender/login` & `/api/auth/lender/register`). Token contains `role: 'lender'`.
-3. **Entries & Date-wise Ledger API:**
-   - Full CRUD for daily sales and purchases (`/api/entries`).
-   - Month summary and day-by-day aggregations (`/api/entries/month-summary`, `/api/entries/months`).
-   - 7-day sales trend (`/api/entries/week-summary`).
-4. **Fintech Integrity Rules (Judges Highlight):**
-   - **Auto-Downgrade on Edit:** Editing any entry automatically downgrades trust level to `4` (`Self-reported`) and sets verification label to `'Edited by you'`.
-   - **Immutable Audit Trail:** Every single edit is recorded in `entry_history` with old values, new values, timestamp, and user identity.
-5. **Automatic Seed Data:**
-   - Pre-seeds **Ramesh Kumar** (`+91 9876543210`), **Priya Sharma** (`priya@kanpurmfi.org`), **Vikas S.** (`+91 9123456780`), today's transactions, and 60 days of historical data.
+### Step 1: Database, Auth & Entries API
+- **Relational SQLite DB (`node:sqlite` in WAL mode):** 10 production tables with full referential integrity.
+- **Dual-Role Auth:** Phone OTP for Vendors, Work Email + Password for Lenders.
+- **Date-wise Ledger API:** Aggregations, daily views, month navigation.
+- **Fintech Integrity Rules:** Auto-downgrade on edit (`l: 4`, `'Edited by you'`) + immutable audit history in `entry_history`.
+
+### Step 2: Server-Side Consent Enforcement & Lender Dashboard
+- **Strict Server-Side Consent Checks:** Judges' #1 question: *"Is consent enforced on the server?"* — **YES**. Every request by a lender to view a vendor triggers a DB lookup in `consents`. If revoked or expired, the server immediately returns `HTTP 403 Forbidden` (`CONSENT_DENIED`).
+- **Immutable Access Audit (`access_log`):** Whenever a lender views an applicant's profile or income summary, a tamper-proof record is created with timestamp, lender name, organization, action, and IP.
+- **Privacy-Preserving Lender Views:** Lenders only see calculated underwriting summaries, confidence bands, evidence mixes, and risk flags. Raw audio recordings, phone numbers, and raw bank statements are never leaked.
+- **Real-Time Applications Queue:** Applications dynamically reflect consent states (`Consent valid`, `Consent pending`, `Consent withdrawn`). Unconsented vendor numbers are completely masked.
 
 ---
 
