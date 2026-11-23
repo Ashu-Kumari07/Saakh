@@ -47,6 +47,7 @@ js/router.js          hash router with role guard (loads last)
 - Receipt OCR and UPI matching are not built yet.
 - Tailwind is loaded from the Play CDN (prototype only).
 
+
 ## Roadmap
 
 1. Backend and database (vendors, entries, consents, audit log)
