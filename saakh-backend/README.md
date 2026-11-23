@@ -28,6 +28,14 @@
   - Source 3: *UPI inflow* (`[26000, 34500]`)
   - *Mathematical Overlap:* `[max(mins), min(maxs)]` = **`₹28,000 to ₹34,500`**. When they overlap, confidence becomes **High**; when there is a mismatch (like Vikas S.), confidence drops to **Low**.
 
+### Step 4: Receipt Upload & Automated UPI Reconciliation Engine
+- **Automated Payment-verified Badge:** Uploaded receipts initially start at `Trust Level 3 (Unverified photo)`.
+- **Reconciliation Engine (`±2 Days Rule`):** When a UPI statement / transaction is uploaded or matched:
+  1. *Amount Match:* `abs(receipt.amount - upi.amount) == 0`.
+  2. *Date Match:* `abs(bill_date - tx_date) <= 2 days`.
+- **Trust Level Upgrade:** Upon finding an authentic debit match to the supplier/mandi, the system automatically links the records and upgrades the entry to **`Trust Level 0 (Payment-verified)`** with label `'Matched to UPI'`.
+- **Batch Reconciliation:** Uploading a UPI statement automatically scans and upgrades all past eligible receipts.
+
 ---
 
 ## 🛠️ Tech Stack

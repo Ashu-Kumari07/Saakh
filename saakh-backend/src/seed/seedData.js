@@ -308,6 +308,30 @@ function seedDatabase() {
         'Chrome/124.0 (Windows)'
     );
 
+    // 7. Seed Receipts for Ramesh Kumar
+    db.prepare(`DELETE FROM receipts WHERE vendor_id = 'v_ramesh_01'`).run();
+    const insertReceipt = db.prepare(`
+        INSERT INTO receipts (id, vendor_id, supplier_name, bill_number, amount, bill_date, image_path, image_hash, ocr_raw_text, is_matched_upi, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+
+    insertReceipt.run('rcpt_01', 'v_ramesh_01', 'Chakarpur Mandi: Tomatoes & onions (180 kg)', 'BILL-418', 4850, '2026-11-20', 'uploads/receipt_mandi_418.jpg', 'hash_mandi_418', 'Chakarpur Mandi bill total 4850', 1, '2026-11-20T08:00:00Z');
+    insertReceipt.run('rcpt_02', 'v_ramesh_01', 'Maheshwari Sabzi Traders: Potatoes & cauliflower', 'BILL-214', 3420, '2026-11-17', 'uploads/receipt_mah_214.jpg', 'hash_mah_214', 'Maheshwari Sabzi Traders total 3420', 0, '2026-11-17T08:00:00Z');
+    insertReceipt.run('rcpt_03', 'v_ramesh_01', 'Green Leaf Wholesale: Coriander & chillies', 'BILL-105', 1960, '2026-11-15', 'uploads/receipt_grn_105.jpg', 'hash_grn_105', 'Green Leaf Wholesale total 1960', 0, '2026-11-15T08:00:00Z');
+    insertReceipt.run('rcpt_04', 'v_ramesh_01', 'Handwritten stall slip: Seasonal peas & okra', 'BILL-SLIP', 2150, '2026-11-12', 'uploads/receipt_slip.jpg', 'hash_slip', 'Handwritten stall slip 2150', 0, '2026-11-12T08:00:00Z');
+    insertReceipt.run('rcpt_05', 'v_ramesh_01', 'Chakarpur Mandi: Mixed root vegetables (210 kg)', 'BILL-399', 5240, '2026-11-09', 'uploads/receipt_mandi_399.jpg', 'hash_mandi_399', 'Chakarpur Mandi bill total 5240', 1, '2026-11-09T08:00:00Z');
+
+    // 8. Seed UPI Transactions for Ramesh Kumar
+    db.prepare(`DELETE FROM upi_transactions WHERE vendor_id = 'v_ramesh_01'`).run();
+    const insertUPI = db.prepare(`
+        INSERT INTO upi_transactions (id, vendor_id, reference_no, payer_payee, type, amount, tx_date, tx_time, matched_receipt_id, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+
+    insertUPI.run('upi_tx_01', 'v_ramesh_01', 'UPI9281726351', 'PhonePe settlement: 14 customer QR payments', 'credit', 1840, '2026-11-21', '06:30 PM', null, '2026-11-21T18:30:00Z');
+    insertUPI.run('upi_tx_02', 'v_ramesh_01', 'UPI4829104812', 'UPI transfer to Chakarpur Mandi (bill #418)', 'debit', 4850, '2026-11-20', '09:15 AM', 'rcpt_01', '2026-11-20T09:15:00Z');
+    insertUPI.run('upi_tx_03', 'v_ramesh_01', 'UPI1029384756', 'Paytm QR inflow: 19 customer payments', 'credit', 2120, '2026-11-19', '07:10 PM', null, '2026-11-19T19:10:00Z');
+
     console.log('[Saakh Seed] Seed data inserted successfully!');
 }
 

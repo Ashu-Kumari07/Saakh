@@ -7,6 +7,8 @@ const entriesRoutes = require('./routes/entriesRoutes');
 const consentRoutes = require('./routes/consentRoutes');
 const lenderRoutes = require('./routes/lenderRoutes');
 const incomeRoutes = require('./routes/incomeRoutes');
+const receiptRoutes = require('./routes/receiptRoutes');
+const upiRoutes = require('./routes/upiRoutes');
 const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
@@ -20,6 +22,9 @@ app.use(cors({
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Serve static uploaded files
+app.use('/uploads', express.static('uploads'));
 
 // Request Logger
 app.use((req, res, next) => {
@@ -48,6 +53,8 @@ app.use('/api/vendor/consent', consentRoutes);
 app.use('/api/lender', lenderRoutes);
 app.use('/api/income', incomeRoutes);
 app.use('/api/vendor/income', incomeRoutes);
+app.use('/api/receipts', receiptRoutes);
+app.use('/api/upi', upiRoutes);
 
 // 404 Handler
 app.use((req, res) => {
