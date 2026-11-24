@@ -152,7 +152,7 @@ async function handleSendOtp() {
         }
 
         const firstDigit = document.getElementById('otp_0');
-        if (firstDigit) firstDigit.focus();
+        if (firstDigit && typeof firstDigit.focus === 'function') firstDigit.focus();
         if (btn) {
             btn.disabled = true;
         }
@@ -182,7 +182,7 @@ async function handleSendOtp() {
 
     toast(`${t('otp_sent_success', 'OTP sent successfully')} (Code: ${demoCode})`);
     const verifyBtn = document.getElementById('btnVerifyOtp');
-    if (verifyBtn) verifyBtn.focus();
+    if (verifyBtn && typeof verifyBtn.focus === 'function') verifyBtn.focus();
     if (btn) {
         btn.disabled = true;
     }
@@ -362,60 +362,54 @@ async function handleLenderLogin() {
     const errorAlert = document.getElementById('authErrorAlert');
     if (errorAlert) errorAlert.classList.add('hidden');
 
+    let isBackendSuccess = false;
+    let data = null;
+
     try {
         const res = await apiFetch('/api/auth/lender/login', {
             method: 'POST',
             body: JSON.stringify({ email, password })
         });
-        const data = await res.json();
-
-        if (data.success) {
-            if (data.token) localStorage.setItem('saakh_token', data.token);
-            if (data.user) {
-                data.user.role = 'lender';
-                try { localStorage.setItem('saakh_user', JSON.stringify(data.user)); } catch (_) {}
+        if (res.ok) {
+            data = await res.json();
+            if (data && data.success) {
+                isBackendSuccess = true;
             }
-            if (window.S) {
-                window.S.role = 'lender';
-                if (data.user) window.S.user = data.user;
-            }
-            toast(data.message || t('login_success', 'Signed in successfully'));
-            nav('applications');
-        } else {
-            // Immediate graceful client fallback for Kanpur Microfinance Demo
-            const demoLender = {
-                id: 'l_priya_01',
-                name: 'Priya Sharma',
-                email: 'priya@kanpurmfi.org',
-                organization: 'Kanpur Microfinance',
-                role: 'lender'
-            };
-            try { localStorage.setItem('saakh_user', JSON.stringify(demoLender)); } catch (_) {}
-            if (window.S) {
-                window.S.role = 'lender';
-                window.S.user = demoLender;
-            }
-            toast(t('login_success', 'Signed in successfully as Priya Sharma (Kanpur Microfinance)'));
-            nav('applications');
         }
-    } catch (err) {
-        console.error('Lender Login Error:', err);
-        // Instant graceful client fallback for Kanpur Microfinance Demo
-        const demoLender = {
-            id: 'l_priya_01',
-            name: 'Priya Sharma',
-            email: 'priya@kanpurmfi.org',
-            organization: 'Kanpur Microfinance',
-            role: 'lender'
-        };
-        try { localStorage.setItem('saakh_user', JSON.stringify(demoLender)); } catch (_) {}
+    } catch (apiErr) {
+        console.warn('Backend unavailable during lender login. Using Kanpur Microfinance demo fallback:', apiErr);
+    }
+
+    if (isBackendSuccess && data) {
+        if (data.token) localStorage.setItem('saakh_token', data.token);
+        if (data.user) {
+            data.user.role = 'lender';
+            try { localStorage.setItem('saakh_user', JSON.stringify(data.user)); } catch (_) {}
+        }
         if (window.S) {
             window.S.role = 'lender';
-            window.S.user = demoLender;
+            if (data.user) window.S.user = data.user;
         }
-        toast(t('login_success', 'Signed in successfully as Priya Sharma (Kanpur Microfinance)'));
+        toast(data.message || t('login_success', 'Signed in successfully'));
         nav('applications');
+        return;
     }
+
+    // Immediate graceful client fallback for Kanpur Microfinance Demo
+    const demoLender = {
+        id: 'l_priya_01',
+        name: 'Priya Sharma',
+        email: 'priya@kanpurmfi.org',
+        organization: 'Kanpur Microfinance',
+        role: 'lender'
+    };
+    try { localStorage.setItem('saakh_user', JSON.stringify(demoLender)); } catch (_) {}
+    if (window.S) {
+        window.S.role = 'lender';
+        window.S.user = demoLender;
+    }
+    toast(t('login_success', 'Signed in successfully as Priya Sharma (Kanpur Microfinance)'));
+    nav('applications');
 }
 
 /**
