@@ -1,8 +1,21 @@
 const bcrypt = require('bcryptjs');
 const { randomUUID } = require('node:crypto');
-const db = require('../config/db');
 
-function seedDatabase() {
+function getDb(passedDb) {
+    if (passedDb && typeof passedDb.prepare === 'function') return passedDb;
+    try {
+        const dbConfig = require('../config/db');
+        if (dbConfig && typeof dbConfig.prepare === 'function') return dbConfig;
+    } catch (_) {}
+    return null;
+}
+
+function seedDatabase(passedDb) {
+    const db = getDb(passedDb);
+    if (!db || typeof db.prepare !== 'function') {
+        console.error('[Saakh Seed] Cannot seed: database handle not available or lacks .prepare()');
+        return;
+    }
     console.log('[Saakh Seed] Seeding production demo database...');
 
     // Clear previous OTP test sessions

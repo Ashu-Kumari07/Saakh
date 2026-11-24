@@ -103,13 +103,18 @@ class SmsService {
         if (!apiKey) {
             const err = new Error('2Factor API key (TWOFACTOR_API_KEY) is missing in .env configuration.');
             err.statusCode = 503;
+            err.code = 'SMS_GATEWAY_NOT_CONFIGURED';
             throw err;
         }
 
         const template = process.env.TWOFACTOR_OTP_TEMPLATE || 'OTP_VERIFICATION';
         const url = `https://2factor.in/API/V1/${encodeURIComponent(apiKey)}/SMS/${encodeURIComponent(phone)}/${encodeURIComponent(otp)}/${encodeURIComponent(template)}`;
 
-        const data = await this.httpRequest(url, { method: 'GET' });
+        let data = null;
+        try {
+            data = await this.httpRequest(url, { method: 'GET' });
+        } catch (_) {}
+
         if (data && data.Status === 'Success') {
             return {
                 success: true,
@@ -117,12 +122,26 @@ class SmsService {
                 messageId: data.Details,
                 message: lang === 'hi' ? `+91 ${phone} पर OTP सफलतापूर्वक भेजा गया` : `OTP sent successfully to +91 ${phone}`
             };
-        } else {
-            const errMsg = data ? (data.Details || data.Status) : '2Factor delivery failed';
-            const err = new Error(lang === 'hi' ? `2Factor SMS त्रुटि: ${errMsg}` : `2Factor SMS delivery failed: ${errMsg}`);
-            err.statusCode = 502;
-            throw err;
         }
+
+        // Automatic Voice Call Fallback via 2Factor if SMS fails or user is on DND
+        try {
+            const voiceUrl = `https://2factor.in/API/V1/${encodeURIComponent(apiKey)}/VOICE/${encodeURIComponent(phone)}/${encodeURIComponent(otp)}`;
+            const voiceData = await this.httpRequest(voiceUrl, { method: 'GET' });
+            if (voiceData && voiceData.Status === 'Success') {
+                return {
+                    success: true,
+                    provider: '2factor-voice',
+                    messageId: voiceData.Details,
+                    message: lang === 'hi' ? `+91 ${phone} पर OTP कॉल सफलतापूर्वक भेजी गई` : `OTP voice call placed to +91 ${phone}`
+                };
+            }
+        } catch (_) {}
+
+        const errMsg = data ? (data.Details || data.Status) : '2Factor delivery failed';
+        const err = new Error(lang === 'hi' ? `2Factor त्रुटि: ${errMsg}` : `2Factor delivery failed: ${errMsg}`);
+        err.statusCode = 502;
+        throw err;
     }
 
     /**

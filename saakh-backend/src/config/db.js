@@ -40,8 +40,11 @@ try {
 const db = new DatabaseSync(resolvedPath);
 
 // Enable Foreign Key support and WAL (Write-Ahead Logging) for concurrent access
-db.exec('PRAGMA foreign_keys = ON;');
-db.exec('PRAGMA journal_mode = WAL;');
+try { db.exec('PRAGMA foreign_keys = ON;'); } catch (_) {}
+try { db.exec('PRAGMA journal_mode = WAL;'); } catch (_) {}
+
+// IMPORTANT: Export `db` immediately to prevent circular dependency issues
+module.exports = db;
 
 // Initialize schema
 function initDatabase() {
@@ -58,17 +61,6 @@ function initDatabase() {
     try {
         db.exec(`ALTER TABLE otp_sessions ADD COLUMN request_count INTEGER DEFAULT 0;`);
     } catch (e) {}
-
-    // Auto-seed if database is fresh (crucial for Netlify Functions serverless environment)
-    try {
-        const vendorCount = db.prepare(`SELECT COUNT(*) as count FROM vendors`).get();
-        if (!vendorCount || vendorCount.count === 0) {
-            const seedDatabase = require('../seed/seedData');
-            seedDatabase();
-        }
-    } catch (_) {}
 }
 
 initDatabase();
-
-module.exports = db;
