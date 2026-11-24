@@ -744,9 +744,12 @@ function langPicker() {
 document.documentElement.lang = localStorage.getItem('saakh_lang') || 'en';
 
 // Base API URL resolver connecting frontend to backend
-const API_BASE = (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'))
-    ? (window.location.port === '5000' ? '' : 'http://localhost:5000')
-    : '';
+const API_BASE = (typeof window !== 'undefined' && window.SAAKH_API_BASE)
+    || (typeof localStorage !== 'undefined' && localStorage.getItem('saakh_api_base'))
+    || (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+        ? (window.location.port === '5000' ? '' : 'http://localhost:5000')
+        : '');
+if (typeof window !== 'undefined') window.API_BASE = API_BASE;
 
 // Global fetch wrapper ensuring Accept-Language and X-Language headers are always sent
 if (typeof window !== 'undefined' && typeof window.fetch === 'function') {
