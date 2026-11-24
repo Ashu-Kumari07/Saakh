@@ -65,9 +65,16 @@ app.use('/api/fraud', fraudRoutes);
 app.use('/api/voice', voiceRoutes);
 app.use('/api/ocr', ocrRoutes);
 
-// Serve frontend static files (allowing localhost:5000 to serve the full app)
-const frontendPath = path.resolve(__dirname, '../../saakh-frontend');
+// Serve frontend static files (allowing server to serve the full app)
+const fs = require('fs');
+const localFrontend = path.resolve(__dirname, '../../saakh-frontend');
+const rootFrontend = path.resolve(__dirname, '../../');
+const frontendPath = fs.existsSync(path.join(localFrontend, 'index.html')) ? localFrontend : rootFrontend;
 app.use(express.static(frontendPath));
+
+app.get(['/', '/index.html'], (req, res) => {
+    res.sendFile(path.join(frontendPath, 'index.html'));
+});
 
 // 404 Handler
 app.use((req, res) => {
