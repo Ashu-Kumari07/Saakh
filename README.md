@@ -1,221 +1,237 @@
 # 🌾 Saakh (साख) — Cash Income, Finally Provable
 
-[![Tests Status](https://img.shields.io/badge/Tests-46%20Passed%20(100%25)-success?style=for-the-badge&logo=node.js)](https://github.com)
+[![Tests Status](https://img.shields.io/badge/Tests-74%20Passed%20(100%25)-success?style=for-the-badge&logo=node.js)](https://github.com)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
 [![Engine](https://img.shields.io/badge/Engine-Node.js%20%7C%20Express%20%7C%20Native%20SQLite%20(WAL)-orange?style=for-the-badge)](https://nodejs.org)
 [![Privacy](https://img.shields.io/badge/Consent-Server--Enforced%20(DPDP%20Ready)-green?style=for-the-badge)](https://meity.gov.in)
+[![SMS Gateway](https://img.shields.io/badge/SMS%20Gateway-2Factor.in%20%2B%20Mock-blueviolet?style=for-the-badge)](https://2factor.in)
+[![Bilingual](https://img.shields.io/badge/Language-English%20%7C%20Hindi%20(हिंदी)-teal?style=for-the-badge)](https://github.com)
 
 > **"Cash income, finally provable."**  
-> Saakh is a consent-first micro-enterprise underwriting and date-wise ledger platform designed for India's 60+ million street vendors and small retailers. It turns daily voice logs, wholesale mandi receipts, and UPI statements into bank-grade verifiable income evidence that formal NBFCs and lenders can trust.
+> Saakh is a consent-first micro-enterprise underwriting and date-wise financial ledger platform designed for India's 60+ million street vendors, kirana merchants, and nano-retailers. It turns daily voice logs, wholesale mandi receipts, utility payments, and UPI statements into bank-grade, tamper-evident income evidence that formal NBFCs and microfinance lenders can underwrite with high confidence.
 
 ---
 
-## 💡 The Core Problem
+## 💡 The Problem & The Solution
 
-In India, street vendors, chaiwallahs, and fruit/vegetable sellers earn ₹25,000 to ₹40,000 a month in cash and UPI. Yet, when they apply for formal working capital or MUDRA loans:
-1. **They have no formal ITR, GST, or audited balance sheets.**
-2. **Traditional bookkeeping apps (Khatabook, OkCredit) are self-reported:** anyone can type "Sale ₹50,000", making lenders reject them due to zero verifiable integrity.
-3. **Lenders default to predatory interest rates (30% to 60% per annum) or instant rejection.**
+In India, street vendors, small tea stalls, and vegetable retailers earn ₹25,000 to ₹50,000 monthly, predominantly in cash and QR payments. However, when applying for working capital or PM SVANidhi loans:
+1. **They lack formal ITRs, GST registrations, or audited balance sheets.**
+2. **Traditional bookkeeping apps (Khatabook, OkCredit) are 100% self-reported:** anyone can type "Sale ₹50,000" without proof, leading lenders to discard digital logs as unverifiable.
+3. **Lenders default to predatory informal loans (30% to 60% per annum) or flat rejection.**
 
-**Saakh solves this without forcing vendors to change how they work.**
+**Saakh bridges this gap with verifiable evidence levels, mathematical triangulation, and consent-driven transparency—without disrupting how vendors run their daily businesses.**
 
 ---
 
-## ⚡ Key Architectural Pillars
+## ⚡ Architectural Blueprint
 
 ```mermaid
 graph TD
-    A["Daily Voice / Text Log (Bilingual Whisper NLP)"] -->|Initial Entry: Level 4 Self-reported| B["Saakh Date-wise Ledger"]
-    C["Mandi / Wholesaler Receipt (OCR Engine)"] -->|Level 3 Unverified Photo| B
-    D["Bank / UPI Statement"] -->|Rupee-exact & ±2 Days Matching| E["Reconciliation Engine"]
+    A["Daily Voice / Text Entry (Bilingual Whisper NLP)"] -->|Level 4 Self-reported| B["Saakh Date-Wise Ledger"]
+    C["Wholesale Mandi Receipt (OCR & Image Hash)"] -->|Level 3 Unverified Photo| B
+    D["Bank / UPI QR Statement Feed"] -->|Dual-Key ±2 Days Reconciliation| E["Matching Engine"]
     B --> E
-    E -->|Automated Trust Upgrade| F["Level 0: Payment-verified"]
-    B --> G["Income Engine (COGS Margin Modeling)"]
-    G --> H["3-Source Triangulation ([Purchases] ∩ [Voice] ∩ [UPI])"]
-    H --> I["Conservative Income Range (₹27K - ₹35K)"]
-    I --> J["30% Lower-Bound EMI Cap (Max ₹8,000)"]
-    K["Fraud & Anomaly Engine"] -->|SHA-256 Hashes, Round Amts, Mandi Rates, Bot Velocity| L["Risk Score & Flags (e.g. Vikas S.)"]
-    M["Lender Review"] -->|Server-side Consent Check| N{"Consent Valid?"}
-    N -->|No| O["HTTP 403 Forbidden (CONSENT_DENIED)"]
-    N -->|Yes| P["Lender Summary + access_log Audit Trail"]
+    E -->|Automated Trust Upgrade| F["Level 0: Payment-Verified"]
+    B --> G["Income Engine (Margin & COGS Modeling)"]
+    G --> H["3-Source Triangulation ([Purchases] ∩ [Voice Logs] ∩ [UPI Inflow])"]
+    H --> I["Conservative Income Range (e.g. ₹27K - ₹35K)"]
+    I --> J["Fair-Lending 30% Lower-Bound EMI Cap (Max ₹8,000)"]
+    K["4-Stage Anomaly & Fraud Engine"] -->|SHA-256 Duplicates, Round Amts, Mandi Rates, Bot Velocity| L["Risk Score & Anomaly Flags (e.g. Vikas S.)"]
+    M["Lender Applications Queue"] -->|Server-Side Consent Check| N{"Consent Active?"}
+    N -->|No / Withdrawn| O["HTTP 403 Forbidden (Data Masked)"]
+    N -->|Yes| P["Full Underwriting Dossier + access_log Trail"]
 ```
-
-### 1. 🛡️ 5-Tier Trust Hierarchy
-Every transaction in Saakh carries an explicit trust level:
-- **Level 0 (Payment-verified):** Verified by matching wholesale receipt with actual UPI bank debit within $\pm 2$ days.
-- **Level 1 (Invoice-verified):** GST/Digital invoice from verified FMCG distributor.
-- **Level 2 (Supplier-confirmed):** Wholesaler countersigned confirmation.
-- **Level 3 (Unverified photo):** Uploaded paper slip awaiting bank reconciliation.
-- **Level 4 (Self-reported):** Voice-logged or manually entered.
-> **Anti-Tampering Enforcement:** If any user edits a previously Level 0 or Level 1 verified entry, the server **automatically downgrades it to Level 4 (`Self-reported`)** and commits an unalterable diff record into `entry_history`.
-
-### 2. 🔐 Server-Side Consent & Tamper-Proof Audit (`DPDP Act Ready`)
-- **Server-Enforced Access Control:** Turning off consent in the vendor privacy settings terminates lender access at the server level. Any subsequent review request returns `HTTP 403 Forbidden` (`CONSENT_DENIED`).
-- **Immutable Access Trail (`access_log`):** Whenever a lender inspects an applicant's profile, a persistent audit record is logged with timestamp, lender ID, and IP address.
-- **Data Minimization:** Lenders only see computed financial distributions, confidence bands, and fraud alerts—never raw customer phone numbers or unredacted personal files.
-
-### 3. 📈 Algorithmic Income Engine & 30% EMI Cap
-- **Margin Modeling:** Street vendors know their daily wholesale purchases better than net profit. Saakh models inventory turnover and wholesale markups (e.g., 25–40% on fresh produce) to derive gross sales.
-- **Conservative Range:** Rather than an arbitrary single number, Saakh generates `₹27,000 to ₹35,000` with an associated confidence band.
-- **Fair Lending 30% Cap:** Suggested max monthly EMI is strictly capped at **30% of the lower income bound** (`0.30 * ₹27,000 = ₹8,100` $\rightarrow$ **`₹8,000`**), preventing over-indebtedness.
-- **3-Source Triangulation:** Intersects 3 independent sources:
-  1. Wholesale mandi purchases
-  2. Spoken daily ledger logs
-  3. UPI digital customer inflows  
-  *(Overlap produces High Confidence; divergent data triggers flags).*
-
-### 4. 🧾 Automated Receipt & UPI Reconciliation Engine
-- Automatically parses vendor receipt photos via regex/OCR (Supplier name, Date, Invoice #, Amount).
-- Scans bank/UPI transaction feeds with dual-parameter matching:
-  $$\text{abs}(\text{receipt.amount} - \text{upi.amount}) = 0 \quad \text{AND} \quad \text{abs}(\text{receipt.date} - \text{upi.date}) \le 2\text{ days}$$
-- Matches instantly upgrade entries to **Level 0 (`Payment-verified`)** with green badges.
-
-### 5. 🚨 Fraud Detection & Bot Velocity Prevention
-Tested against the high-risk vendor profile (**Vikas S.**):
-- **Cryptographic Duplicate Image Detection:** SHA-256 hash collision detection across all vendors.
-- **Round-Amount Anomaly Detection:** Real wholesale grocery bills have odd rupees. Accounts where $\ge 70\%$ of invoices are round numbers (e.g., ₹10,000, ₹15,000) are flagged.
-- **Mandi Benchmark Deviation Check:** Compares declared rates against regional mandi commodity rates (e.g., Sugar at ₹78/kg vs market ₹44/kg $\rightarrow$ flagged).
-- **Burst Velocity Bot Detection:** Detects automated manipulation, such as **42 entries logged within 3 minutes**.
-
-### 6. 🎙️ Bilingual Voice Whisper & OCR Engine
-- **Hinglish & English NLP:** Translates spoken commodity phrases into structured ledger items:
-  - *"Sold three packets of chips, twenty rupees each"* $\rightarrow$ Sale: Chips 3 packets, Qty: 3, Price: ₹20, Total: ₹60.
-  - *"Kharida pyaz 20 kilo 680 rupay"* $\rightarrow$ Purchase: Onions 20 kilo, Qty: 20, Total: ₹680.
-- **Proof Storage:** Saves voice audio streams to disk proof storage (`uploads/audio/`), linking audio directly to entries.
 
 ---
 
-## 🏗️ Repository Architecture
+## 🌟 Key Features & Innovations
+
+### 1. 🛡️ 5-Tier Verifiable Trust Hierarchy
+Every transaction in the ledger carries an explicit, auditable trust level:
+- **Level 0 (Payment-verified):** Verified by matching wholesale receipt directly with bank UPI debit records within $\pm 2$ days.
+- **Level 1 (Invoice-verified):** Formal GST or distributor bill from verified FMCG wholesalers.
+- **Level 2 (Supplier-confirmed):** Confirmed by regular market suppliers.
+- **Level 3 (Unverified photo):** Uploaded paper slip or receipt photo awaiting matching.
+- **Level 4 (Self-reported):** Voice-logged or manually entered transaction.
+> **Anti-Tampering Integrity:** If an existing Level 0 or Level 1 verified entry is modified, the system **automatically downgrades it to Level 4 (`Edited by you`)** and commits an unalterable diff record into `entry_history`.
+
+---
+
+### 2. 📱 Dual Authentication & Live SMS Gateway
+- **Real Vendor Authentication:** Vendors authenticate via their 10-digit mobile number with **live SMS OTP dispatch** powered by **2Factor.in** (`TWOFACTOR_API_KEY`).
+  - Cryptographically secure 6-digit OTPs hashed with SHA-256 in SQLite.
+  - 30-second cooldown protection.
+  - 5-attempt rate-limiting lockout against brute-force attacks.
+  - Zero OTP exposure in client responses.
+- **1-Click Lender Demo Mode:** Pre-populated credentials (`priya@kanpurmfi.org` / `password123`) for Loan Officer Priya Sharma at Kanpur Microfinance with 1-click **"Verify and continue"** access into the review dashboard.
+- **Strict Role Separation:** Vendor data is real and dynamically user-isolated; lender queue serves review pipelines with zero cross-contamination.
+
+---
+
+### 3. 📅 Date-Wise Ledger History & Inline Editing
+- **Full Historical Browsing:** Automatically discovers and lists all dates from the vendor's registration date up to today.
+- **Flexible Navigation:** Jump between dates via the daily ledger list, monthly summaries, or the calendar date picker.
+- **Live Inline Editing & Deletion:** Edit Item Name, Type (Sale/Purchase), or Amount on any past or present date with instant recalculation of daily sales, purchases, and estimated profit.
+- **Dual Persistence:** Automatically persisted in browser `localStorage` and synchronized asynchronously with SQLite backend tables (`/api/entries`).
+
+---
+
+### 4. 🔗 Dynamic Data Sources (UPI, Receipts, Utility, SHG)
+Real vendor accounts start with clean, dynamic data sources that can be linked via interactive modals:
+- **Voice Sales Log:** Real-time badge tracking today's confirmed voice sales.
+- **Wholesale Receipts:** Upload wholesale mandi purchase bills; automatically updates verified count and adds purchase entries.
+- **UPI Statement:** Link business UPI VPA (e.g. `phone@paytm`, `shop@okhdfcbank`) and bank to reconcile customer QR payments.
+- **Utility Bills:** Connect electricity account (UPPCL, BSES, etc.) to establish proof of fixed operating location and 100% on-time utility discipline.
+- **Self-Help Group (SHG):** Link SHG or Mahila Bachat Samuh membership, monthly savings, and tenure—a strong positive proxy for microfinance underwriting.
+
+---
+
+### 5. 📈 Conservative Income Modeling & 30% EMI Cap
+- **Margin Triangulation:** Calculates conservative monthly income bounds using wholesale turnover markups, voice sales logs, and UPI inflows.
+- **30% Fair-Lending Cap:** Max suggested monthly EMI is hard-capped at **30% of the lower income bound** (`0.30 × Lower Bound`), preventing predatory over-indebtedness.
+- **3-Source Overlap:** When all three sources converge, confidence is rated **High**; divergence lowers confidence and alerts the loan officer.
+
+---
+
+### 6. 🚨 4-Stage Fraud & Anomaly Engine
+Underwriters can inspect risk flags across 4 heuristic algorithms (demonstrated on high-risk profile **Vikas S.**):
+1. **Cryptographic Duplicate Bill Detection:** Computes SHA-256 image hashes to detect recycled bills across vendors.
+2. **Round-Number Anomaly:** Detects fabricated books where $\ge 70\%$ of invoices are round amounts (e.g. ₹10,000, ₹15,000).
+3. **Mandi Benchmark Check:** Compares declared rates against regional mandi price benchmarks (e.g., Sugar at ₹78/kg vs market ₹44/kg $\rightarrow$ flagged).
+4. **Burst Velocity Bot Detection:** Flags automated bulk manipulation (e.g., 42 voice entries recorded within 3 minutes).
+
+---
+
+### 7. 🌐 Complete Bilingual Support (English & Hindi)
+- Fully accessible bilingual experience covering all pages, forms, modals, error messages, voice parsing, and ledger views.
+- Clean language toggle situated exclusively on the top-right navigation bar.
+
+---
+
+## 🏗️ Repository Structure
 
 ```
-saakh/
-├── index.html                   # Responsive frontend application shell
+Saakh/
+├── index.html                   # Single-Page Application shell
 ├── css/
-│   └── styles.css               # Design tokens (Pine green & Marigold theme)
+│   └── styles.css               # Material 3 Design tokens & palette
 ├── js/
-│   ├── data.js                  # Preloaded vendor & lender profiles
-│   ├── ledger.js                # Frontend ledger navigation & calculations
-│   ├── pages.js                 # Screens: Home, Ledger, Privacy, Applications, Underwrite
-│   ├── router.js                # Dual-role hash router (Vendor vs Lender isolation)
-│   ├── ui.js                    # High-fidelity UI components & evidence bars
-│   └── voice.js                 # Speech recognition & audio capture UI
+│   ├── auth.js                  # 2Factor SMS OTP, digit auto-navigation & lender login
+│   ├── data.js                  # User data sources, dynamic state & interactive modals
+│   ├── i18n.js                  # Bilingual translation dictionary & reactive switch
+│   ├── ledger.js                # Date-wise ledger history, inline editor & totals
+│   ├── pages.js                 # Screens: Home, Ledger, Score, Privacy, Applications
+│   ├── router.js                # Dual-role hash router & auth guards
+│   ├── ui.js                    # Reusable components, modals, evidence bars
+│   ├── utils.js                 # Currency formatters, DOM helpers & date math
+│   └── voice.js                 # Bilingual speech recognition & audio parser
 │
-└── saakh-backend/               # Enterprise Node.js Backend
-    ├── server.js                # App entrypoint & auto-migration
+└── saakh-backend/               # Node.js + Express Backend
+    ├── server.js                # Server entrypoint (serves backend & frontend on :5000)
     ├── package.json             # Express, JWT, Bcrypt, Multer, Native SQLite
+    ├── .env.example             # Gateway API keys & configuration template
     ├── src/
-    │   ├── app.js               # Express route mounting & CORS configuration
+    │   ├── app.js               # Route mounting, static frontend serving & CORS
     │   ├── config/
     │   │   └── db.js            # Node native SQLite (WAL mode, foreign keys ON)
     │   ├── models/
     │   │   └── schema.sql       # 10 relational tables (entries, consents, access_log, etc.)
     │   ├── middleware/
     │   │   ├── auth.js          # Dual-role JWT authentication
-    │   │   └── errorHandler.js  # Centralized RFC-compliant error handler
-    │   ├── controllers/
-    │   │   ├── authController.js    # Phone OTP & Lender Auth
-    │   │   ├── entriesController.js # CRUD, Audit log & Trust downgrade
-    │   │   ├── consentController.js # Consent grant, revoke & access_log
-    │   │   ├── lenderController.js  # Applications queue & review
-    │   │   ├── incomeController.js  # Underwriting & income score
-    │   │   ├── receiptController.js # Receipt upload & storage
-    │   │   ├── upiController.js      # Statement parsing & auto-reconcile
-    │   │   ├── fraudController.js   # 4-stage anomaly detection scan
-    │   │   ├── voiceController.js   # Voice sentence parse & save
-    │   │   └── ocrController.js     # Mandi invoice scan
+    │   │   └── errorHandler.js  # RFC-compliant error handling
+    │   ├── controllers/         # Modular controllers (auth, entries, consent, income, etc.)
     │   ├── services/
-    │   │   ├── incomeEngine.js   # Mathematical triangulation & EMI cap
-    │   │   ├── matchingEngine.js # Dual-key ±2 days reconciliation
-    │   │   ├── fraudEngine.js    # SHA-256 hashes, mandi benchmark check
-    │   │   ├── voiceService.js   # Bilingual NLP sentence extraction
-    │   │   └── ocrService.js     # Text pattern invoice extractor
+    │   │   ├── incomeEngine.js  # Triangulation algorithm & 30% EMI cap
+    │   │   ├── matchingEngine.js# Dual-key ±2 days reconciliation
+    │   │   ├── fraudEngine.js   # SHA-256 collision, round figures, mandi benchmarks
+    │   │   ├── smsService.js    # 2Factor.in live SMS gateway + mock driver
+    │   │   └── voiceService.js  # NLP sentence extraction
+    │   ├── utils/
+    │   │   └── i18n.js          # Backend bilingual error & response middleware
     │   └── seed/
-    │       └── seedData.js       # Preloaded 60-day historical data
-    └── tests/                   # 46 Automated Unit & Integration Tests
-        ├── step1.test.js        # Auth & Ledger tests (8 tests)
-        ├── step2.test.js        # Server-side Consent & Lender tests (11 tests)
-        ├── step3.test.js        # Income Engine & Cross-check tests (7 tests)
-        ├── step4.test.js        # Receipt & UPI Reconciliation tests (7 tests)
-        ├── step5.test.js        # Fraud & Anomaly tests (8 tests)
-        └── step6.test.js        # Voice Whisper & OCR tests (5 tests)
+    │       └── seedData.js      # Idempotent demo database seeder
+    └── tests/                   # 74 Automated Test Cases Across 8 Suites
+        ├── step1.test.js        # Unit & Database CRUD (8 tests)
+        ├── step2.test.js        # Server-Side Consent & Lenders (11 tests)
+        ├── step3.test.js        # Income Engine & Cross-Checks (7 tests)
+        ├── step4.test.js        # Receipt & UPI Reconciliation (7 tests)
+        ├── step5.test.js        # Fraud & Anomaly Algorithms (6 tests)
+        ├── step6.test.js        # OCR & Text Extraction (5 tests)
+        ├── i18n.test.js         # Bilingual Hindi/English Integration (19 tests)
+        └── sms_otp.test.js      # SMS OTP Gateway & Security Flow (9 tests)
 ```
 
 ---
 
-## 🚀 Quickstart Guide
+## 🚀 Getting Started
 
 ### Prerequisites
-- Node.js (v22.x or v26.x with native `node:sqlite` support)
-- Modern web browser (Google Chrome recommended for speech input)
+- **Node.js** v22.x or v26.x (with native `node:sqlite` support)
+- Modern web browser (Google Chrome recommended for Web Speech API)
 
-### 1. Start the Backend
+### 1. Clone & Setup
 ```bash
-cd saakh-backend
+git clone https://github.com/aasthajain1017-lang/Saakh.git
+cd Saakh/saakh-backend
 npm install
+```
+
+### 2. Configure Environment Variables
+Create `.env` in `saakh-backend/`:
+```env
+PORT=5000
+NODE_ENV=development
+JWT_SECRET=saakh_production_jwt_secret_key_2026_xyz987
+OTP_EXPIRY_MINUTES=10
+
+# SMS Gateway (Choose live 2factor or mock for local development)
+SMS_PROVIDER=2factor
+TWOFACTOR_API_KEY=your_2factor_api_key_here
+TWOFACTOR_SENDER_ID=SAAKHN
+```
+
+### 3. Run Server
+```bash
 npm start
 ```
-The backend initializes the SQLite database with WAL mode and runs on `http://localhost:5000`.
+The server starts on **`http://localhost:5000`** and serves both the backend API and frontend SPA.
 
-### 2. Run the Automated Test Suite (46 Tests)
+### 4. Run Automated Test Suite (74 Tests)
 ```bash
-cd saakh-backend
 npm test
 ```
-*Executes all 6 test suites across auth, server-side consent, income triangulation, UPI matching, fraud algorithms, and voice parsing.*
-
-### 3. Open the Frontend
-You can open `index.html` directly in your browser or serve it locally:
-```bash
-# In the project root:
-python3 -m http.server 8000
-# Open http://localhost:8000 in your browser
-```
+All 74 tests across 8 test suites will execute and pass 100%.
 
 ---
 
-## 🔑 Demo Personas & Credentials
+## 🔑 Login Personas & Test Credentials
 
-| Role | Name / Email / Phone | Credentials | Profile Context |
-|---|---|---|---|
-| **Prime Vendor** | **Ramesh Kumar** (`9876543210`) | OTP: `123456` | Vegetable vendor in Kanpur; 60+ days clean ledger history; high confidence; consent active. |
-| **Loan Officer** | **Priya Sharma** (`priya@kanpurmfi.org`) | Password: `password123` | Kanpur Microfinance NBFC; reviews applications queue and underwrites loans. |
-| **Flagged Vendor** | **Vikas S.** (`9123456780`) | OTP: `123456` | Kirana shop in Indore; flagged for duplicate receipts, round amounts, bot velocity burst. |
+| Persona | Role | Credentials | Description |
+|:---|:---|:---|:---|
+| **Real Vendor** | Vendor | Enter registered 10-digit mobile number | Receives real live SMS OTP via 2Factor; personalized clean ledger and dynamic data sources. |
+| **Demo Vendor (Ramesh Kumar)** | Vendor | Phone: `1234567890`<br>Fixed OTP: `123456` | Pre-populated 60-day historical ledger, verified receipts, and high-confidence score. |
+| **Loan Officer (Priya Sharma)** | Lender | Email: `priya@kanpurmfi.org`<br>Password: `password123` | Click **"Verify and continue"** on the *"I'm a lender"* tab to review active vendor applications. |
+| **Flagged Profile (Vikas S.)** | Vendor (Risk Review) | Profile accessible in Lender queue | Highlights duplicate receipt collisions, round numbers, and velocity bot anomalies. |
 
 ---
 
-## 📡 API Reference Summary
+## 📡 API Overview
 
-| Endpoint | Method | Role | Description |
-|---|---|---|---|
-| `/api/auth/vendor/send-otp` | POST | Public | Generates OTP for street vendor mobile login |
-| `/api/auth/vendor/verify-otp` | POST | Public | Validates OTP and returns JWT token (`role: vendor`) |
-| `/api/auth/lender/login` | POST | Public | Lender authentication with email & password |
-| `/api/entries` | GET / POST | Vendor | List date-wise entries or create a new sale/purchase |
-| `/api/entries/:id` | PUT / DELETE | Vendor | Update entry (triggers auto-downgrade to Trust Level 4 + audit trail) |
-| `/api/vendor/consent/status` | GET | Vendor | Inspect active lender access permissions |
-| `/api/vendor/consent/revoke` | POST | Vendor | Revoke consent (immediately triggers server-side 403 block) |
+| Route | Method | Access | Purpose |
+|:---|:---:|:---:|:---|
+| `/api/health` | GET | Public | Service health & database connectivity check |
+| `/api/auth/vendor/send-otp` | POST | Public | Dispatches 6-digit SMS OTP with cooldown |
+| `/api/auth/vendor/verify-otp` | POST | Public | Validates OTP and issues Vendor JWT |
+| `/api/auth/lender/login` | POST | Public | Authenticates lender with email & password |
+| `/api/entries` | GET / POST | Vendor | Retrieve date-wise ledger or add manual entry |
+| `/api/entries/:id` | PUT / DELETE | Vendor | Updates entry (triggers auto-downgrade to Level 4) |
+| `/api/receipts/upload` | POST | Vendor | Uploads purchase bill (initial Level 3) |
+| `/api/upi/statement` | POST | Vendor | Ingests statement transactions and triggers matching |
+| `/api/vendor/consent/status` | GET | Vendor | Inspects active lender permissions |
+| `/api/vendor/consent/revoke` | POST | Vendor | Instantly terminates lender access (HTTP 403) |
 | `/api/lender/applications` | GET | Lender | Queue of loan applications with consent states |
-| `/api/lender/vendor/:id` | GET | Lender | Protected review endpoint (strictly requires active consent) |
-| `/api/income/underwrite/:id`| GET | Lender | Algorithmic 3-source income calculation & 30% EMI cap |
-| `/api/receipts/upload` | POST | Vendor | Upload wholesale mandi slip (initial Level 3) |
-| `/api/upi/statement` | POST | Vendor | Upload UPI statement (triggers batch reconciliation to Level 0) |
-| `/api/fraud/scan/:vendorId` | GET | Lender | 4-stage anomaly scan (duplicate hashes, round figures, rate spikes) |
-| `/api/voice/parse` | POST | Vendor | Transcribe and extract financial items/rates from speech |
-| `/api/voice/save` | POST | Vendor | Commit confirmed voice entry with attached audio link |
-| `/api/ocr/scan` | POST | Vendor | Scan invoice receipt image for supplier and totals |
-
----
-
-## 🏆 Why Saakh Wins at Hackathons
-
-| Evaluation Criteria | Traditional Student Projects | Saakh |
-|---|---|---|
-| **Data Persistence** | Browser `localStorage` that clears on refresh | Production SQLite DB in WAL mode with 10 relational tables |
-| **Underwriting Math** | Fake static strings (`"Income: ₹30,000"`) | Conservative margin modeling, 3-source triangulation interval, 30% lower-bound EMI cap |
-| **Lending Integrity** | Anyone can fabricate self-reported entries | Trust Hierarchy (0 to 4); editing verified data auto-downgrades to self-reported with audit logging |
-| **Privacy & DPDP Compliance** | UI-only toggle hides elements in DOM | Strict server-side HTTP 403 enforcement + tamper-proof `access_log` |
-| **Fraud Resilience** | None (easily gamed by bots) | Cryptographic SHA-256 duplicate image detection, round-amount heuristics, mandi rate checks, 42-entries velocity bot trigger |
-| **Zero Setup Complexity** | Complex Docker/Postgres/C++ compilation setups | Built with native Node.js (`node:sqlite`), runs 100% offline at native speed |
+| `/api/lender/vendor/:id` | GET | Lender | Full underwriting review (strictly consent-gated) |
+| `/api/fraud/scan/:vendorId` | GET | Lender | Runs 4-stage heuristic anomaly detection scan |
 
 ---
 
