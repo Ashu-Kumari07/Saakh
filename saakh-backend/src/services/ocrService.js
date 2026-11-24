@@ -113,10 +113,13 @@ class OCRService {
      */
     static async processReceiptImage(imageBuffer, filename = 'receipt.jpg', simulatedText = null) {
         // Save image to proof storage
-        const receiptsDir = path.join(__dirname, '../../uploads/receipts');
-        if (!fs.existsSync(receiptsDir)) {
-            fs.mkdirSync(receiptsDir, { recursive: true });
-        }
+        const isServerless = Boolean(process.env.NETLIFY || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.LAMBDA_TASK_ROOT);
+        const receiptsDir = isServerless ? '/tmp/uploads/receipts' : path.join(__dirname, '../../uploads/receipts');
+        try {
+            if (!fs.existsSync(receiptsDir)) {
+                fs.mkdirSync(receiptsDir, { recursive: true });
+            }
+        } catch (_) {}
 
         const safeFilename = `rcpt_${Date.now()}_${path.basename(filename)}`;
         const targetPath = path.join(receiptsDir, safeFilename);

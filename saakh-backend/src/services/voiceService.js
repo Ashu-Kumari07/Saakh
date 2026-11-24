@@ -159,10 +159,13 @@ class VoiceService {
      */
     static async processVoiceAudio(audioBuffer, originalFilename = 'voice.webm', fallbackTranscript = null) {
         // Save audio to disk proof storage
-        const audioDir = path.join(__dirname, '../../uploads/audio');
-        if (!fs.existsSync(audioDir)) {
-            fs.mkdirSync(audioDir, { recursive: true });
-        }
+        const isServerless = Boolean(process.env.NETLIFY || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.LAMBDA_TASK_ROOT);
+        const audioDir = isServerless ? '/tmp/uploads/audio' : path.join(__dirname, '../../uploads/audio');
+        try {
+            if (!fs.existsSync(audioDir)) {
+                fs.mkdirSync(audioDir, { recursive: true });
+            }
+        } catch (_) {}
 
         const filename = `voice_${Date.now()}_${Math.random().toString(36).substring(2, 7)}${path.extname(originalFilename) || '.webm'}`;
         const filePath = path.join(audioDir, filename);

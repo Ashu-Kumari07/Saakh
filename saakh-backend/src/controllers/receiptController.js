@@ -5,10 +5,13 @@ const db = require('../config/db');
 const { MatchingEngine } = require('../services/matchingEngine');
 
 // Ensure uploads directory exists
-const uploadsDir = path.join(__dirname, '../../uploads');
-if (!fs.existsSync(uploadsDir)) {
-    fs.mkdirSync(uploadsDir, { recursive: true });
-}
+const isServerless = Boolean(process.env.NETLIFY || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.LAMBDA_TASK_ROOT);
+const uploadsDir = isServerless ? '/tmp/uploads' : path.join(__dirname, '../../uploads');
+try {
+    if (!fs.existsSync(uploadsDir)) {
+        fs.mkdirSync(uploadsDir, { recursive: true });
+    }
+} catch (_) {}
 
 // 1. Upload & Reconcile Receipt
 exports.uploadReceipt = (req, res, next) => {

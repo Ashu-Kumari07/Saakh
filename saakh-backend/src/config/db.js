@@ -19,9 +19,11 @@ if (process.env.NETLIFY || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.L
 
 // Ensure directory exists
 const dir = path.dirname(resolvedPath);
-if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-}
+try {
+    if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+    }
+} catch (_) {}
 
 const db = new DatabaseSync(resolvedPath);
 
