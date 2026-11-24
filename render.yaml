@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: saakh-backend
+    runtime: node
+    rootDir: saakh-backend
+    buildCommand: npm install
+    startCommand: node server.js
+    plan: free
+    envVars:
+      - key: NODE_VERSION
+        value: 22
+      - key: SMS_PROVIDER
+        value: 2factor
+      - key: TWOFACTOR_API_KEY
+        value: 316f2961-e7d5-11f1-b9b1-0200cd936042
+      - key: TWOFACTOR_OTP_TEMPLATE
+        value: OTP_VERIFICATION
+      - key: JWT_SECRET
+        value: saakh_super_secret_jwt_key_hackathon_winning_2026
+      - key: DATABASE_PATH
+        value: ./saakh.db

@@ -3,8 +3,19 @@ const fs = require('node:fs');
 const path = require('node:path');
 require('dotenv').config();
 
-const dbPath = process.env.DATABASE_PATH || path.join(__dirname, '../../saakh.db');
-const resolvedPath = path.resolve(dbPath);
+const defaultPath = path.resolve(__dirname, '../../saakh.db');
+let resolvedPath = process.env.DATABASE_PATH ? path.resolve(process.env.DATABASE_PATH) : defaultPath;
+
+// If on AWS Lambda / Netlify environment, use writable /tmp storage
+if (process.env.NETLIFY || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.LAMBDA_TASK_ROOT) {
+    const tmpDbPath = path.join('/tmp', 'saakh.db');
+    if (!fs.existsSync(tmpDbPath)) {
+        if (fs.existsSync(defaultPath)) {
+            try { fs.copyFileSync(defaultPath, tmpDbPath); } catch (_) {}
+        }
+    }
+    resolvedPath = tmpDbPath;
+}
 
 // Ensure directory exists
 const dir = path.dirname(resolvedPath);
@@ -33,6 +44,15 @@ function initDatabase() {
     try {
         db.exec(`ALTER TABLE otp_sessions ADD COLUMN request_count INTEGER DEFAULT 0;`);
     } catch (e) {}
+
+    // Auto-seed if database is fresh (crucial for Netlify Functions serverless environment)
+    try {
+        const vendorCount = db.prepare(`SELECT COUNT(*) as count FROM vendors`).get();
+        if (!vendorCount || vendorCount.count === 0) {
+            const seedDatabase = require('../seed/seedData');
+            seedDatabase();
+        }
+    } catch (_) {}
 }
 
 initDatabase();

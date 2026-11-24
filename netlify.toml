@@ -1,0 +1,20 @@
+[build]
+  publish = "."
+  functions = "netlify/functions"
+
+[build.environment]
+  NODE_VERSION = "22"
+  SMS_PROVIDER = "2factor"
+  TWOFACTOR_API_KEY = "316f2961-e7d5-11f1-b9b1-0200cd936042"
+  TWOFACTOR_OTP_TEMPLATE = "OTP_VERIFICATION"
+  JWT_SECRET = "saakh_super_secret_jwt_key_hackathon_winning_2026"
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
