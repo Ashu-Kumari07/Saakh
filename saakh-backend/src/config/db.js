@@ -1,4 +1,16 @@
-const { DatabaseSync } = require('node:sqlite');
+let DatabaseSync;
+try {
+    const sqlite = require('node:sqlite');
+    if (sqlite && sqlite.DatabaseSync) DatabaseSync = sqlite.DatabaseSync;
+} catch (_) {}
+
+if (!DatabaseSync) {
+    try {
+        DatabaseSync = require('better-sqlite3');
+    } catch (e) {
+        console.error('[DB Initialization Error]: Neither node:sqlite nor better-sqlite3 found.', e);
+    }
+}
 const fs = require('node:fs');
 const path = require('node:path');
 require('dotenv').config();
