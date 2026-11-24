@@ -97,94 +97,75 @@ async function handleSendOtp() {
         errorAlert.className = 'p-3 mt-4 rounded-md text-label-sm font-label hidden';
     }
 
-    let isBackendSuccess = false;
-    let data = null;
-
     try {
         const res = await apiFetch('/api/auth/vendor/send-otp', {
             method: 'POST',
             body: JSON.stringify({ phone })
         });
-        if (res.ok) {
-            data = await res.json();
-            if (data && data.success) {
-                isBackendSuccess = true;
-            }
-        }
-    } catch (apiErr) {
-        console.warn('Backend unavailable, using standalone client mode:', apiErr);
-    }
+        const data = await res.json();
 
-    if (isBackendSuccess && data) {
-        toast(data.message || t('otp_sent_success', 'OTP sent successfully'));
-        startOtpCooldown(data.cooldownSeconds || 30);
+        if (data.success) {
+            toast(data.message || t('otp_sent_success', 'OTP sent successfully'));
+            startOtpCooldown(data.cooldownSeconds || 30);
 
-        // Display clear OTP notification for testing & auto-fill ONLY for demo account (1234567890)
-        if (data.isDemo) {
-            if (errorAlert) {
-                errorAlert.innerHTML = `
-                    <div class="flex items-center justify-between">
-                        <span>✨ <strong>Demo Account:</strong> Code: <span class="text-base font-bold tracking-widest text-emerald-600">${data.demoOtp || '123456'}</span></span>
-                        <span class="text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-semibold">Auto-filled</span>
-                    </div>
-                `;
-                errorAlert.className = 'p-3 mt-4 rounded-md bg-emerald-50 border border-emerald-300 text-emerald-800 text-label-sm font-label block';
+            // Display clear OTP notification for testing & auto-fill ONLY for demo account (1234567890)
+            if (data.isDemo) {
+                if (errorAlert) {
+                    errorAlert.innerHTML = `
+                        <div class="flex items-center justify-between">
+                            <span>✨ <strong>Demo Account:</strong> Code: <span class="text-base font-bold tracking-widest text-emerald-600">${data.demoOtp || '123456'}</span></span>
+                            <span class="text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-semibold">Auto-filled</span>
+                        </div>
+                    `;
+                    errorAlert.className = 'p-3 mt-4 rounded-md bg-emerald-50 border border-emerald-300 text-emerald-800 text-label-sm font-label block';
+                }
+                const demoCode = data.demoOtp || '123456';
+                for (let i = 0; i < 6; i++) {
+                    const el = document.getElementById(`otp_${i}`);
+                    if (el) el.value = demoCode[i] || '';
+                }
+            } else {
+                // For REAL mobile numbers: OTP is confidential! Do not show or auto-fill!
+                for (let i = 0; i < 6; i++) {
+                    const el = document.getElementById(`otp_${i}`);
+                    if (el) el.value = '';
+                }
+                if (errorAlert) {
+                    errorAlert.innerHTML = `
+                        <div>
+                            <span>📩 <strong>OTP Dispatched:</strong> A 6-digit verification code has been sent via SMS to <strong>+91 ${phone}</strong>. Please check your SMS messages.</span>
+                        </div>
+                    `;
+                    errorAlert.className = 'p-3 mt-4 rounded-md bg-blue-50 border border-blue-300 text-blue-800 text-label-sm font-label block';
+                }
             }
-            const demoCode = data.demoOtp || '123456';
-            for (let i = 0; i < 6; i++) {
-                const el = document.getElementById(`otp_${i}`);
-                if (el) el.value = demoCode[i] || '';
-            }
+
+            const firstDigit = document.getElementById('otp_0');
+            if (firstDigit) firstDigit.focus();
         } else {
-            // For REAL mobile numbers: OTP is confidential! Do not show or auto-fill!
-            for (let i = 0; i < 6; i++) {
-                const el = document.getElementById(`otp_${i}`);
-                if (el) el.value = '';
-            }
+            const errorMsg = data.error || t('otp_send_failed', 'Failed to send OTP');
+            toast(errorMsg);
             if (errorAlert) {
-                errorAlert.innerHTML = `
-                    <div>
-                        <span>📩 <strong>OTP Dispatched:</strong> A 6-digit verification code has been sent via SMS to <strong>+91 ${phone}</strong>. Please check your SMS messages.</span>
-                    </div>
-                `;
-                errorAlert.className = 'p-3 mt-4 rounded-md bg-blue-50 border border-blue-300 text-blue-800 text-label-sm font-label block';
+                errorAlert.textContent = errorMsg;
+                errorAlert.className = 'p-3 mt-4 rounded-md bg-red-50 border border-red-300 text-red-700 text-label-sm font-label block';
+            }
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
             }
         }
-
-        const firstDigit = document.getElementById('otp_0');
-        if (firstDigit) firstDigit.focus();
-        if (btn) {
-            btn.disabled = true;
+    } catch (err) {
+        console.error('Send OTP Error:', err);
+        const netErr = t('network_error', 'Cannot connect to backend server. Verify port 5000 is running.');
+        toast(netErr);
+        if (errorAlert) {
+            errorAlert.textContent = netErr;
+            errorAlert.className = 'p-3 mt-4 rounded-md bg-red-50 border border-red-300 text-red-700 text-label-sm font-label block';
         }
-        return;
-    }
-
-    // --- Standalone / Netlify Static Demo Fallback ---
-    // If backend is not running or on Netlify static hosting, allow seamless testing without errors!
-    const demoCode = '123456';
-    try { sessionStorage.setItem('saakh_demo_otp_' + phone, demoCode); } catch (_) {}
-    startOtpCooldown(30);
-
-    for (let i = 0; i < 6; i++) {
-        const el = document.getElementById(`otp_${i}`);
-        if (el) el.value = demoCode[i] || '';
-    }
-
-    if (errorAlert) {
-        errorAlert.innerHTML = `
-            <div class="flex items-center justify-between">
-                <span>✨ <strong>${phone === '1234567890' ? 'Demo Account' : 'Verification Code'}:</strong> Code: <span class="text-base font-bold tracking-widest text-emerald-600">${demoCode}</span></span>
-                <span class="text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-semibold">Auto-filled</span>
-            </div>
-        `;
-        errorAlert.className = 'p-3 mt-4 rounded-md bg-emerald-50 border border-emerald-300 text-emerald-800 text-label-sm font-label block';
-    }
-
-    toast(`${t('otp_sent_success', 'OTP sent successfully')} (Code: ${demoCode})`);
-    const verifyBtn = document.getElementById('btnVerifyOtp');
-    if (verifyBtn) verifyBtn.focus();
-    if (btn) {
-        btn.disabled = true;
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
     }
 }
 
@@ -221,123 +202,56 @@ async function handleVerifyOtp() {
     const errorAlert = document.getElementById('authErrorAlert');
     if (errorAlert) errorAlert.classList.add('hidden');
 
-    let isBackendSuccess = false;
-    let data = null;
-
     try {
         const res = await apiFetch('/api/auth/vendor/verify-otp', {
             method: 'POST',
             body: JSON.stringify({ phone, otp })
         });
-        if (res.ok) {
-            data = await res.json();
-            if (data && data.success) {
-                isBackendSuccess = true;
+        const data = await res.json();
+
+        if (data.success) {
+            if (data.token) localStorage.setItem('saakh_token', data.token);
+            if (data.user) {
+                data.user.role = 'vendor';
+                try { localStorage.setItem('saakh_user', JSON.stringify(data.user)); } catch (_) {}
+            }
+            if (window.S) {
+                window.S.role = 'vendor';
+                if (data.user) window.S.user = data.user;
+            }
+            if (typeof initUserLedger === 'function') initUserLedger();
+            if (typeof syncUserEntriesFromBackend === 'function') syncUserEntriesFromBackend();
+
+            if (data.isNewUser) {
+                toast(data.message || (getAuthLang() === 'hi' ? 'कृपया अपनी विक्रेता प्रोफ़ाइल पूरी करें' : 'Please complete your business profile'));
+                nav('onboarding');
+            } else {
+                toast(data.message || t('login_success', 'Signed in successfully'));
+                nav('home');
+            }
+        } else {
+            const errorMsg = data.error || t('otp_invalid', 'Invalid OTP');
+            toast(errorMsg);
+            if (errorAlert) {
+                errorAlert.textContent = errorMsg;
+                errorAlert.className = 'p-3 mt-4 rounded-md bg-red-50 border border-red-300 text-red-700 text-label-sm font-label block';
+            }
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
             }
         }
-    } catch (apiErr) {
-        console.warn('Backend unavailable during verify. Using client fallback:', apiErr);
-    }
-
-    if (isBackendSuccess && data) {
-        if (data.token) localStorage.setItem('saakh_token', data.token);
-        if (data.user) {
-            data.user.role = 'vendor';
-            try { localStorage.setItem('saakh_user', JSON.stringify(data.user)); } catch (_) {}
-        }
-        if (window.S) {
-            window.S.role = 'vendor';
-            if (data.user) window.S.user = data.user;
-        }
-        if (typeof initUserLedger === 'function') initUserLedger();
-        if (typeof syncUserEntriesFromBackend === 'function') syncUserEntriesFromBackend();
-
-        if (data.isNewUser) {
-            toast(data.message || (getAuthLang() === 'hi' ? 'कृपया अपनी विक्रेता प्रोफ़ाइल पूरी करें' : 'Please complete your business profile'));
-            nav('onboarding');
-        } else {
-            toast(data.message || t('login_success', 'Signed in successfully'));
-            nav('home');
-        }
-        return;
-    }
-
-    // --- Standalone / Netlify Static Demo Fallback ---
-    let expectedOtp = '123456';
-    try { expectedOtp = sessionStorage.getItem('saakh_demo_otp_' + phone) || '123456'; } catch (_) {}
-
-    if (otp !== expectedOtp && otp !== '123456') {
-        const errorMsg = t('otp_invalid', 'Invalid OTP');
-        toast(errorMsg);
+    } catch (err) {
+        console.error('Verify OTP Error:', err);
+        const netErr = t('network_error', 'Cannot connect to backend server. Verify port 5000 is running.');
+        toast(netErr);
         if (errorAlert) {
-            errorAlert.textContent = errorMsg;
+            errorAlert.textContent = netErr;
             errorAlert.className = 'p-3 mt-4 rounded-md bg-red-50 border border-red-300 text-red-700 text-label-sm font-label block';
         }
         if (btn) {
             btn.disabled = false;
             btn.innerHTML = originalText;
-        }
-        return;
-    }
-
-    // OTP Verified! Log user in
-    if (phone === '1234567890') {
-        const demoUser = {
-            id: 'v_ramesh_01',
-            name: 'Ramesh Kumar',
-            phone: '1234567890',
-            businessType: 'Vegetable & Fruit Vendor',
-            city: 'Kanpur',
-            yearsInBusiness: 4,
-            role: 'vendor'
-        };
-        try {
-            localStorage.setItem('saakh_token', 'demo_token_vendor_1234567890');
-            localStorage.setItem('saakh_user', JSON.stringify(demoUser));
-        } catch (_) {}
-        if (window.S) {
-            window.S.role = 'vendor';
-            window.S.user = demoUser;
-        }
-        if (typeof initUserLedger === 'function') initUserLedger();
-        toast(t('login_success', 'Signed in successfully as Ramesh Kumar'));
-        nav('home');
-    } else {
-        let existingUser = null;
-        try {
-            existingUser = JSON.parse(localStorage.getItem('saakh_vendor_profile_' + phone));
-        } catch (_) {}
-
-        if (existingUser && existingUser.name) {
-            existingUser.role = 'vendor';
-            try {
-                localStorage.setItem('saakh_token', 'demo_token_vendor_' + phone);
-                localStorage.setItem('saakh_user', JSON.stringify(existingUser));
-            } catch (_) {}
-            if (window.S) {
-                window.S.role = 'vendor';
-                window.S.user = existingUser;
-            }
-            if (typeof initUserLedger === 'function') initUserLedger();
-            toast(t('login_success', 'Signed in successfully'));
-            nav('home');
-        } else {
-            const newUser = {
-                id: 'v_' + phone,
-                phone: phone,
-                role: 'vendor',
-                isNewUser: true
-            };
-            try {
-                localStorage.setItem('saakh_token', 'demo_token_vendor_' + phone);
-                localStorage.setItem('saakh_user', JSON.stringify(newUser));
-            } catch (_) {}
-            if (window.S) {
-                window.S.role = 'vendor';
-                window.S.user = newUser;
-            }
-            toast(getAuthLang() === 'hi' ? 'कृपया अपनी विक्रेता प्रोफ़ाइल पूरी करें' : 'Please complete your business profile');
-            nav('onboarding');
         }
     }
 }
@@ -449,60 +363,46 @@ async function handleCompleteProfile(e) {
         btn.innerHTML = `<span class="inline-flex items-center gap-2"><span class="animate-spin inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full"></span>${getAuthLang() === 'hi' ? 'सहेज रहे हैं...' : 'Saving profile...'}</span>`;
     }
 
-    let isBackendSuccess = false;
-    let data = null;
-
     try {
         const res = await apiFetch('/api/auth/vendor/profile', {
             method: 'POST',
             body: JSON.stringify({ name, businessType, city, yearsInBusiness })
         });
-        if (res.ok) {
-            data = await res.json();
-            if (data && data.success && data.user) {
-                isBackendSuccess = true;
+        const data = await res.json();
+
+        if (data.success && data.user) {
+            data.user.role = 'vendor';
+            if (window.S) {
+                window.S.role = 'vendor';
+                window.S.user = data.user;
+            }
+            try { localStorage.setItem('saakh_user', JSON.stringify(data.user)); } catch (_) {}
+            if (typeof initUserLedger === 'function') initUserLedger();
+            toast(data.message || (getAuthLang() === 'hi' ? 'प्रोफ़ाइल सफलतापूर्वक बनाई गई!' : 'Profile saved successfully!'));
+            nav('home');
+        } else {
+            const errorMsg = data.error || (getAuthLang() === 'hi' ? 'प्रोफ़ाइल सहेजने में विफल' : 'Failed to save profile');
+            toast(errorMsg);
+            if (errorAlert) {
+                errorAlert.textContent = errorMsg;
+                errorAlert.classList.remove('hidden');
+            }
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
             }
         }
-    } catch (apiErr) {
-        console.warn('Backend unavailable during profile save. Using client storage:', apiErr);
-    }
-
-    if (isBackendSuccess && data) {
-        data.user.role = 'vendor';
-        if (window.S) {
-            window.S.role = 'vendor';
-            window.S.user = data.user;
+    } catch (err) {
+        console.error('Complete Profile Error:', err);
+        const netErr = t('network_error', 'Cannot connect to backend server. Verify port 5000 is running.');
+        toast(netErr);
+        if (errorAlert) {
+            errorAlert.textContent = netErr;
+            errorAlert.classList.remove('hidden');
         }
-        try { localStorage.setItem('saakh_user', JSON.stringify(data.user)); } catch (_) {}
-        if (typeof initUserLedger === 'function') initUserLedger();
-        toast(data.message || (getAuthLang() === 'hi' ? 'प्रोफ़ाइल सफलतापूर्वक बनाई गई!' : 'Profile saved successfully!'));
-        nav('home');
-        return;
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
     }
-
-    // --- Standalone / Netlify Static Fallback ---
-    const curUser = (window.S && window.S.user) || {};
-    const phone = curUser.phone || '9876543210';
-    const updatedUser = {
-        id: curUser.id || ('v_' + phone),
-        phone: phone,
-        name: name,
-        businessType: businessType,
-        city: city || 'New Delhi',
-        yearsInBusiness: yearsInBusiness,
-        role: 'vendor',
-        isNewUser: false
-    };
-
-    try {
-        localStorage.setItem('saakh_vendor_profile_' + phone, JSON.stringify(updatedUser));
-        localStorage.setItem('saakh_user', JSON.stringify(updatedUser));
-    } catch (_) {}
-    if (window.S) {
-        window.S.role = 'vendor';
-        window.S.user = updatedUser;
-    }
-    if (typeof initUserLedger === 'function') initUserLedger();
-    toast(getAuthLang() === 'hi' ? 'प्रोफ़ाइल सफलतापूर्वक बनाई गई!' : 'Profile saved successfully!');
-    nav('home');
 }
