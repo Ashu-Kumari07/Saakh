@@ -574,7 +574,7 @@ const P = {
                     ${card(`
                         <h2 class="${H2} font-bold">${t('how_to_improve')}</h2>
                         <p class="text-body-md my-2">${t('upload_upi_improve')}</p>
-                        <button onclick="toast('${t('toast_upi_demo')}')" class="${BP} inline-flex items-center gap-2 mt-2">
+                        <button onclick="openUpiModal()" class="${BP} inline-flex items-center gap-2 mt-2 font-bold">
                             ${I('upload_file', 'text-headline-md')}${t('upload_upi')}
                         </button>
                     `, '!p-8')}

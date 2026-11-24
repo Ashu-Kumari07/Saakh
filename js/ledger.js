@@ -89,6 +89,14 @@ const monthDays = mo => {
     if (today.startsWith(mo) && !r.includes(today)) {
         r.unshift(today);
     }
+    if (S.days) {
+        Object.keys(S.days).forEach(d => {
+            if (d.startsWith(mo) && !r.includes(d) && d <= today) {
+                r.push(d);
+            }
+        });
+        r.sort((a, b) => b.localeCompare(a));
+    }
     if (!r.length) r.push(today);
     return r;
 };
@@ -102,6 +110,15 @@ const months = () => {
         r.push(m);
         const y = +m.slice(0, 4), n = +m.slice(5);
         m = n == 1 ? (y - 1) + '-12' : y + '-' + String(n - 1).padStart(2, '0');
+    }
+    if (S.days) {
+        Object.keys(S.days).forEach(d => {
+            const mo = d.slice(0, 7);
+            if (!r.includes(mo) && mo <= today.slice(0, 7)) {
+                r.push(mo);
+            }
+        });
+        r.sort((a, b) => b.localeCompare(a));
     }
     if (!r.length) r.push(today.slice(0, 7));
     return r;
@@ -131,7 +148,7 @@ const weekData = () => [6, 5, 4, 3, 2, 1, 0].map(i => {
 function ledgerPage() {
     const today = getTodayStr();
     if (!S.date) S.date = today;
-    const mo = S.date.slice(0, 7), ks = monthDays(mo), a = dayOf(S.date), t = tot(a), td = S.date == today, ip = 'w-full px-2.5 py-2 rounded border border-outline-strong bg-surface text-body-md';
+    const mo = S.date.slice(0, 7), ks = monthDays(mo), a = dayOf(S.date), totals = tot(a), td = S.date == today, ip = 'w-full px-2.5 py-2 rounded border border-outline-strong bg-surface text-body-md';
     const signup = getSignupDate();
     const minDate = signup <= today ? signup : today;
 
@@ -172,7 +189,7 @@ function ledgerPage() {
                 ${td ? `<button onclick="nav('voice')" class="${BP} !py-2.5 !text-label-md inline-flex items-center gap-2">${I('mic', 'text-title-md')}${t('add_entry_voice', 'Add entry by voice')}</button>` : ''}
             </div>
             <div class="grid grid-cols-3 gap-3">
-                ${[[t('sales', 'Sales'), t.s, ''], [t('purchases', 'Purchases'), t.p, ''], [t('estimated_profit', 'Estimated profit'), t.s - t.p, 'bg-primary-container text-primary font-bold']].map(x => `<div class="rounded-md border border-outline p-4 ${x[2] || 'bg-surface-container'}"><div class="text-label-sm font-label">${x[0]}</div><div class="font-display text-headline-lg tabular-nums mt-1 font-bold">${rs(x[1])}</div></div>`).join('')}
+                ${[[t('sales', 'Sales'), totals.s, ''], [t('purchases', 'Purchases'), totals.p, ''], [t('estimated_profit', 'Estimated profit'), totals.s - totals.p, 'bg-primary-container text-primary font-bold']].map(x => `<div class="rounded-md border border-outline p-4 ${x[2] || 'bg-surface-container'}"><div class="text-label-sm font-label">${x[0]}</div><div class="font-display text-headline-lg tabular-nums mt-1 font-bold">${rs(x[1])}</div></div>`).join('')}
             </div>
             ${card(a.length ? tbl([t('time', 'Time'), t('field_item', 'Item'), t('field_type', 'Type'), t('amount', 'Amount'), t('verification', 'Verification'), ''], rows) : `<div class="p-8 text-center"><p class="${MUT} text-body-md">${t('no_entries_date', 'No entries for this date yet. Add one below.')}</p></div>`, '!p-0 overflow-hidden')}
             ${card(`

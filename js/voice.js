@@ -148,7 +148,7 @@ function save() {
     }
 
     const timeStr = new Date().toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit' });
-    const targetDate = (typeof S !== 'undefined' && S.date) ? S.date : ((typeof getTodayStr === 'function') ? getTodayStr() : new Date().toISOString().split('T')[0]);
+    const targetDate = (typeof getTodayStr === 'function') ? getTodayStr() : new Date().toISOString().split('T')[0];
 
     const newEntry = {
         id: 'e_' + Date.now(),
