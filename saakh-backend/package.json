@@ -7,7 +7,9 @@
     "start": "node server.js",
     "dev": "node --watch server.js",
     "seed": "node src/seed/seedData.js",
-    "test": "node tests/step1.test.js && node tests/step2.test.js && node tests/step3.test.js && node tests/step4.test.js && node tests/step5.test.js && node tests/step6.test.js"
+    "test": "node tests/step1.test.js && node tests/step2.test.js && node tests/step3.test.js && node tests/step4.test.js && node tests/step5.test.js && node tests/step6.test.js && node tests/i18n.test.js && node tests/sms_otp.test.js",
+    "test:i18n": "node tests/i18n.test.js",
+    "test:otp": "node tests/sms_otp.test.js"
   },
   "keywords": [
     "saakh",

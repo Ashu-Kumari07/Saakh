@@ -25,6 +25,14 @@ function initDatabase() {
         const schemaSql = fs.readFileSync(schemaPath, 'utf8');
         db.exec(schemaSql);
     }
+
+    // Dynamic schema migrations for OTP rate limiting & security
+    try {
+        db.exec(`ALTER TABLE otp_sessions ADD COLUMN last_requested_at INTEGER DEFAULT 0;`);
+    } catch (e) {}
+    try {
+        db.exec(`ALTER TABLE otp_sessions ADD COLUMN request_count INTEGER DEFAULT 0;`);
+    } catch (e) {}
 }
 
 initDatabase();

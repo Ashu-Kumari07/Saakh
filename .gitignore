@@ -5,6 +5,8 @@ node_modules/
 .env
 .env.*
 *.env
+js/firebase-config.js
+firebase-config.js
 
 # SQLite databases & WAL logs
 *.db

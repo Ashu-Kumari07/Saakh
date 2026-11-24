@@ -1,4 +1,6 @@
 // Direct Controller & Database Unit Tests (Runs 100% offline in sandbox)
+process.env.NODE_ENV = 'test';
+process.env.SMS_PROVIDER = 'mock';
 const db = require('../src/config/db');
 const seedDatabase = require('../src/seed/seedData');
 const authController = require('../src/controllers/authController');
@@ -21,14 +23,14 @@ async function runUnitTests() {
     const tables = db.prepare(`SELECT name FROM sqlite_master WHERE type='table'`).all().map(t => t.name);
     console.log('✅ Tables Created in SQLite:', tables.filter(t => !t.startsWith('sqlite_')).join(', '));
 
-    // 2. Vendor OTP Send Test
-    const reqSend = { body: { phone: '9876543210' } };
+    // 2. Vendor OTP Send Test (Demo Vendor: 1234567890 / 123456)
+    const reqSend = { body: { phone: '1234567890' } };
     const resSend = mockRes();
     authController.vendorSendOtp(reqSend, resSend, err => { if (err) throw err; });
     console.log('✅ 1. Vendor Send OTP:', resSend.data.success ? `PASS (Demo OTP: ${resSend.data.demoOtp})` : 'FAIL');
 
     // 3. Vendor OTP Verify Test
-    const reqVerify = { body: { phone: '9876543210', otp: resSend.data.demoOtp || '123456' } };
+    const reqVerify = { body: { phone: '1234567890', otp: resSend.data.demoOtp || '123456' } };
     const resVerify = mockRes();
     authController.vendorVerifyOtp(reqVerify, resVerify, err => { if (err) throw err; });
     console.log('✅ 2. Vendor Verify OTP:', resVerify.data.token && resVerify.data.role === 'vendor' ? 'PASS' : 'FAIL');

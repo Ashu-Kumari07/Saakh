@@ -227,7 +227,7 @@ exports.createEntry = (req, res, next) => {
 
         return res.status(201).json({
             success: true,
-            message: 'Entry added successfully.',
+            message: req.t ? req.t('entry_created') : 'Entry added successfully.',
             entry: {
                 id: newEntry.id,
                 date: newEntry.entry_date,
@@ -256,12 +256,12 @@ exports.updateEntry = (req, res, next) => {
 
         const existing = db.prepare(`SELECT * FROM entries WHERE id = ? AND vendor_id = ?`).get(entryId, vendorId);
         if (!existing) {
-            return res.status(404).json({ success: false, error: 'Entry not found or access denied.' });
+            return res.status(404).json({ success: false, error: req.t ? req.t('entry_not_found') : 'Entry not found or access denied.' });
         }
 
         const absAmount = Math.abs(Number(amount));
         if (!absAmount || isNaN(absAmount) || absAmount <= 0) {
-            return res.status(400).json({ success: false, error: 'Valid positive amount is required.' });
+            return res.status(400).json({ success: false, error: req.t ? req.t('entry_item_amount_required') : 'Valid positive amount is required.' });
         }
 
         const newType = type === 'Purchase' ? 'Purchase' : 'Sale';
@@ -335,7 +335,7 @@ exports.updateEntry = (req, res, next) => {
 
         return res.json({
             success: true,
-            message: 'Entry updated successfully. Trust level adjusted to Self-reported.',
+            message: req.t ? req.t('entry_updated') : 'Entry updated successfully. Trust level adjusted to Self-reported.',
             entry: {
                 id: updated.id,
                 date: updated.entry_date,
@@ -362,12 +362,12 @@ exports.deleteEntry = (req, res, next) => {
 
         const existing = db.prepare(`SELECT * FROM entries WHERE id = ? AND vendor_id = ?`).get(entryId, vendorId);
         if (!existing) {
-            return res.status(404).json({ success: false, error: 'Entry not found or access denied.' });
+            return res.status(404).json({ success: false, error: req.t ? req.t('entry_not_found') : 'Entry not found or access denied.' });
         }
 
         db.prepare(`DELETE FROM entries WHERE id = ?`).run(entryId);
 
-        return res.json({ success: true, message: 'Entry deleted successfully.' });
+        return res.json({ success: true, message: req.t ? req.t('entry_deleted') : 'Entry deleted successfully.' });
     } catch (err) {
         next(err);
     }

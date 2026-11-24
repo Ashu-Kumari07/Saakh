@@ -1,0 +1,89 @@
+/* Saakh: design tokens (from the Stitch design system) + small global styles.
+   Components are styled with Tailwind utility classes (see js/tailwind-config.js). */
+
+:root {
+  --primary:#0E4D45;
+  --on-primary:#fff;
+  --primary-container:#E6F0EE;
+  --on-primary-container:#0E4D45;
+  --accent:#F2A900;
+  --on-accent:#14201E;
+  --surface:#F4F6F3;
+  --on-surface:#14201E;
+  --surface-container:#fff;
+  --surface-container-low:#EFF1EE;
+  --on-surface-variant:#404946;
+  --outline:#DBE5E1;
+  --outline-strong:#BFC8C5;
+  --trust-payment:#0E4D45;
+  --trust-invoice:#1B8A8F;
+  --trust-supplier:#F2A900;
+  --trust-unverified:#D9692B;
+  --on-trust-unverified:#222;
+  --trust-self:#8A9490;
+  --trust-payment-tint:#E6F0EE;
+  --trust-invoice-tint:#E6F4F4;
+  --trust-supplier-tint:#FEF6E0;
+  --trust-unverified-tint:#FBEFE8;
+  --trust-self-tint:#EFF1EE;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+/* Dark mode follows the viewer's system setting (override with data-theme) */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --primary:#5FC2B0;
+    --on-primary:#0F1715;
+    --primary-container:#1E2E2A;
+    --on-primary-container:#BFE6DE;
+    --surface:#0F1715;
+    --on-surface:#EAF1EE;
+    --surface-container:#17211F;
+    --surface-container-low:#1E2B28;
+    --on-surface-variant:#9DB0AA;
+    --outline:#27352F;
+    --outline-strong:#3A4B45;
+    --trust-payment:#5FC2B0;
+    --trust-invoice:#4FB3B8;
+    --trust-payment-tint:#1E2E2A;
+    --trust-invoice-tint:#1B2F31;
+    --trust-supplier-tint:#3A3018;
+    --trust-unverified-tint:#3A2418;
+    --trust-self-tint:#26302D;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --primary:#5FC2B0;
+  --on-primary:#0F1715;
+  --primary-container:#1E2E2A;
+  --on-primary-container:#BFE6DE;
+  --surface:#0F1715;
+  --on-surface:#EAF1EE;
+  --surface-container:#17211F;
+  --surface-container-low:#1E2B28;
+  --on-surface-variant:#9DB0AA;
+  --outline:#27352F;
+  --outline-strong:#3A4B45;
+  --trust-payment:#5FC2B0;
+  --trust-invoice:#4FB3B8;
+  --trust-payment-tint:#1E2E2A;
+  --trust-invoice-tint:#1B2F31;
+  --trust-supplier-tint:#3A3018;
+  --trust-unverified-tint:#3A2418;
+  --trust-self-tint:#26302D;
+  color-scheme: dark;
+}
+
+html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+body { margin: 0; }
+
+.material-symbols-outlined {
+  width: 1em; height: 1em; line-height: 1 !important;
+  overflow: hidden; white-space: nowrap; vertical-align: middle;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-pulse { animation: none; }
+}

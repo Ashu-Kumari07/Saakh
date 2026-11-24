@@ -5,19 +5,31 @@ const db = require('../config/db');
 function seedDatabase() {
     console.log('[Saakh Seed] Seeding production demo database...');
 
+    // Clear previous OTP test sessions
+    try { db.prepare(`DELETE FROM otp_sessions`).run(); } catch (_) {}
+
     // 1. Seed Vendors
     const insertVendor = db.prepare(`
-        INSERT INTO vendors (id, phone, name, business_type, city, years_in_business, signup_date, is_verified, created_at)
+        INSERT OR REPLACE INTO vendors (id, phone, name, business_type, city, years_in_business, signup_date, is_verified, created_at)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ON CONFLICT(id) DO UPDATE SET
-            name = excluded.name,
-            phone = excluded.phone,
-            business_type = excluded.business_type,
-            city = excluded.city
     `);
 
+    // Primary Demo Vendor (Phone: 1234567890 | Fixed OTP: 123456 | Ramesh Kumar)
     insertVendor.run(
         'v_ramesh_01',
+        '1234567890',
+        'Ramesh Kumar',
+        'Vegetable vendor',
+        'Kanpur',
+        4,
+        '2025-04-01',
+        1,
+        '2025-04-01T08:00:00Z'
+    );
+
+    // Test Vendor for unit & i18n tests (Phone: 9876543210)
+    insertVendor.run(
+        'v_test_01',
         '9876543210',
         'Ramesh Kumar',
         'Vegetable vendor',

@@ -117,7 +117,7 @@ exports.grantConsent = (req, res, next) => {
 
         return res.json({
             success: true,
-            message: `Consent granted to ${lender.organization} until ${validUntil}.`,
+            message: req.t ? req.t('consent_granted', lender.organization) : `Consent granted to ${lender.organization} until ${validUntil}.`,
             consent: {
                 lenderId: targetLenderId,
                 organization: lender.organization,
@@ -159,7 +159,7 @@ exports.revokeConsent = (req, res, next) => {
 
         return res.json({
             success: true,
-            message: `Sharing with ${orgName} has been stopped immediately. They can no longer access your data.`,
+            message: req.t ? req.t('consent_revoked', orgName) : `Sharing with ${orgName} has been stopped immediately. They can no longer access your data.`,
             status: 'revoked'
         });
     } catch (err) {

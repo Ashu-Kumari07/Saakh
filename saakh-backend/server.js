@@ -28,6 +28,17 @@ const server = app.listen(PORT, () => {
     console.log(`=======================================================`);
 });
 
+server.on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+        console.error(`\n❌ [PORT ${PORT} BUSY]: Another instance of Saakh Server is already running on port ${PORT}!`);
+        console.error(`👉 Run this command in PowerShell to free port ${PORT}:`);
+        console.error(`   Stop-Process -Id (Get-NetTCPConnection -LocalPort ${PORT}).OwningProcess -Force\n`);
+        process.exit(1);
+    } else {
+        console.error('[Saakh Server Error]:', err);
+    }
+});
+
 // Graceful shutdown
 process.on('SIGINT', () => {
     console.log('\n[Saakh Server] Gracefully shutting down...');

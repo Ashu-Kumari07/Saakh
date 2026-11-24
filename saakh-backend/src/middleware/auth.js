@@ -8,7 +8,7 @@ function authenticate(req, res, next) {
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
         return res.status(401).json({
             success: false,
-            error: 'Authentication required. Missing or invalid Bearer token.'
+            error: req.t ? req.t('auth_required') : 'Authentication required. Missing or invalid Bearer token.'
         });
     }
 
@@ -20,7 +20,7 @@ function authenticate(req, res, next) {
     } catch (err) {
         return res.status(401).json({
             success: false,
-            error: 'Invalid or expired token. Please sign in again.'
+            error: req.t ? req.t('auth_invalid_token') : 'Invalid or expired token. Please sign in again.'
         });
     }
 }
@@ -28,9 +28,10 @@ function authenticate(req, res, next) {
 function requireRole(allowedRoles) {
     return (req, res, next) => {
         if (!req.user || !allowedRoles.includes(req.user.role)) {
+            const roleName = req.user ? req.user.role : 'anonymous';
             return res.status(403).json({
                 success: false,
-                error: `Access denied. Role '${req.user ? req.user.role : 'anonymous'}' is not authorized.`
+                error: req.t ? req.t('auth_role_denied', roleName) : `Access denied. Role '${roleName}' is not authorized.`
             });
         }
         next();

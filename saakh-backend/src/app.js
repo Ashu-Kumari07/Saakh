@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 require('dotenv').config();
 
 const authRoutes = require('./routes/authRoutes');
@@ -13,6 +14,7 @@ const fraudRoutes = require('./routes/fraudRoutes');
 const voiceRoutes = require('./routes/voiceRoutes');
 const ocrRoutes = require('./routes/ocrRoutes');
 const errorHandler = require('./middleware/errorHandler');
+const { i18nMiddleware } = require('./utils/i18n');
 
 const app = express();
 
@@ -20,11 +22,12 @@ const app = express();
 app.use(cors({
     origin: '*', // Allows requests from local frontend (http://localhost:8000, 127.0.0.1, file://)
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept-Language', 'X-Language']
 }));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(i18nMiddleware);
 
 // Serve static uploaded files
 app.use('/uploads', express.static('uploads'));
@@ -62,11 +65,15 @@ app.use('/api/fraud', fraudRoutes);
 app.use('/api/voice', voiceRoutes);
 app.use('/api/ocr', ocrRoutes);
 
+// Serve frontend static files (allowing localhost:5000 to serve the full app)
+const frontendPath = path.resolve(__dirname, '../../saakh-frontend');
+app.use(express.static(frontendPath));
+
 // 404 Handler
 app.use((req, res) => {
     res.status(404).json({
         success: false,
-        error: `Endpoint '${req.method} ${req.originalUrl}' not found.`
+        error: req.t ? req.t('not_found', req.method, req.originalUrl) : `Endpoint '${req.method} ${req.originalUrl}' not found.`
     });
 });
 

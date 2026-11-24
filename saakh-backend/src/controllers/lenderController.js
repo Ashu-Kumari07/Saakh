@@ -56,11 +56,13 @@ exports.getApplications = (req, res, next) => {
                     id: v.id,
                     name: v.name,
                     businessSubtitle: `${v.business_type} · ${v.city}`,
-                    incomeRange: 'Hidden until the vendor gives consent',
-                    confidence: 'Awaiting consent',
+                    incomeRange: req.lang === 'hi' ? 'विक्रेता द्वारा सहमति दिए जाने तक छिपा हुआ' : 'Hidden until the vendor gives consent',
+                    confidence: req.lang === 'hi' ? 'सहमति की प्रतीक्षा' : 'Awaiting consent',
                     evidenceMix: null,
                     consentStatus: isConsentWithdrawn ? 'withdrawn' : 'pending',
-                    consentBadge: isConsentWithdrawn ? 'Consent withdrawn' : 'Consent pending',
+                    consentBadge: isConsentWithdrawn
+                        ? (req.lang === 'hi' ? 'सहमति वापस ली गई' : 'Consent withdrawn')
+                        : (req.lang === 'hi' ? 'सहमति लंबित' : 'Consent pending'),
                     suggestedMaxEmi: '—',
                     canReview: false,
                     reviewRoute: null
@@ -72,21 +74,21 @@ exports.getApplications = (req, res, next) => {
                     id: v.id,
                     name: v.name,
                     businessSubtitle: `${v.business_type} · ${v.city}`,
-                    incomeRange: 'Cannot be estimated reliably',
-                    confidence: 'Low',
+                    incomeRange: req.lang === 'hi' ? 'विश्वसनीय रूप से अनुमान नहीं लगाया जा सकता' : 'Cannot be estimated reliably',
+                    confidence: req.lang === 'hi' ? 'कम' : 'Low',
                     evidenceMix: [8, 0, 0, 52, 40],
                     consentStatus: 'valid',
-                    consentBadge: 'Consent valid',
+                    consentBadge: req.lang === 'hi' ? 'सहमति मान्य' : 'Consent valid',
                     suggestedMaxEmi: '—',
                     isFlagged: true,
-                    flagReason: 'Flagged: receipt mismatch',
+                    flagReason: req.lang === 'hi' ? 'संदेहास्पद: रसीद विसंगति' : 'Flagged: receipt mismatch',
                     canReview: true,
                     reviewRoute: 'vikas'
                 };
             }
 
             // Normal verified applicant (Ramesh Kumar, Sita Verma, etc.)
-            const profile = IncomeEngine.calculateVendorUnderwriting(v.id);
+            const profile = IncomeEngine.calculateVendorUnderwriting(v.id, req.lang || 'en');
             const route = v.id === 'v_ramesh_01' ? 'ramesh' : null;
 
             return {
@@ -94,10 +96,10 @@ exports.getApplications = (req, res, next) => {
                 name: v.name,
                 businessSubtitle: `${v.business_type} · ${v.city}`,
                 incomeRange: profile.estimatedMonthlyIncomeRange,
-                confidence: profile.confidence,
+                confidence: req.lang === 'hi' ? (profile.confidence === 'High' ? 'उच्च' : profile.confidence === 'Medium' ? 'मध्यम' : 'कम') : profile.confidence,
                 evidenceMix: profile.evidenceMix,
                 consentStatus: 'valid',
-                consentBadge: 'Consent valid',
+                consentBadge: req.lang === 'hi' ? 'सहमति मान्य' : 'Consent valid',
                 suggestedMaxEmi: profile.suggestedMaxEmi,
                 isFlagged: false,
                 canReview: true,
@@ -145,12 +147,12 @@ exports.getVendorReview = (req, res, next) => {
             return res.status(403).json({
                 success: false,
                 code: 'CONSENT_DENIED',
-                error: 'No consent. This vendor has stopped sharing their profile, so you can no longer view it. Access ended immediately.'
+                error: req.t ? req.t('consent_denied') : 'No consent. This vendor has stopped sharing their profile, so you can no longer view it. Access ended immediately.'
             });
         }
 
         // 2. RECORD AUDIT ACCESS IN access_log
-        recordAccess(vendorId, lender, 'viewed your income summary', req);
+        recordAccess(vendorId, lender, req.lang === 'hi' ? 'ने आपका आय सारांश देखा' : 'viewed your income summary', req);
 
         // 3. CURATED SUMMARY ONLY (No raw phone numbers, no audio files, no raw statements)
         if (vendorId === 'v_vikas_02') {
