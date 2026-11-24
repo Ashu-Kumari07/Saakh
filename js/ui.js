@@ -78,9 +78,8 @@ const shell = (on, title, body) => {
 
     return `<aside class="hidden lg:flex flex-col justify-between fixed inset-y-0 left-0 w-60 bg-surface-container border-r border-outline z-20">
         <div class="p-5 flex flex-col gap-6">
-            <div class="flex items-center justify-between">
+            <div class="flex items-center">
                 ${logo}
-                ${langPicker()}
             </div>
             <nav class="flex flex-col gap-1.5">${nv.map(n => `<a href="#${n[0]}" class="flex items-center gap-3 px-3 py-2.5 rounded text-label-md font-label ${n[0] == on ? 'bg-primary-container text-primary font-semibold' : 'text-on-surface-variant hover:bg-surface'}">${I(n[2], 'text-headline-md')}${n[1]}</a>`).join('')}</nav>
         </div>
