@@ -12,6 +12,8 @@
 
 Live working project link: https://saakh-1.onrender.com
 
+**Note:** Anyone can try the live prototype by visiting the website and selecting **"I'm a Vendor"** on the login page using their mobile number and after verifying heir identity through an OTP phone call. New users can also sign up in the login page using their mobile number and verify their identity through an OTP phone call.
+
 ## 💡 The Problem & The Solution
 
 In India, street vendors, small tea stalls, and vegetable retailers earn ₹25,000 to ₹50,000 monthly, predominantly in cash and QR payments. However, when applying for working capital or PM SVANidhi loans:
